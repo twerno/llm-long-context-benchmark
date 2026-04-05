@@ -1,0 +1,459 @@
+
+export const IDatasetConst = {
+    flagColors: [
+        "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink", "Brown", "Black", "White", "Cyan", "Magenta", "Lime", "Teal",
+    ],
+    stateSystem: ["Autocracy", "Monarchy", "Oligarchy", "Theocracy", "Democracy", "Technocracy", "Plutocracy", "Meritocracy"],
+    // Class 0: Basic/Biological - High volume, low value
+    resourcesClass0: [
+        "Wheat", "Barley", "Rye", "Corn", "Rice", "Oats", "Potatoes", "Carrots",
+        "Apples", "Grapes", "Wool", "Cotton", "Linen", "Timber", "Hemp", "Flax",
+        "Honey", "Salt", "Sugar", "Water", "Fish", "Beef", "Leather", "Silk", "Herbs"
+    ],
+    // Class 1: Industrial/Geological - Specific strata, driving industry
+    resourcesClass1: [
+        "Coal", "Iron", "Copper", "Tin", "Lead", "Zinc", "Silver", "Gold",
+        "Aluminum", "Nickel", "Sulfur", "Sand", "Clay", "Limestone", "Granite",
+        "Basalt", "Quartz", "Slate", "Oil", "Natural Gas", "Rubber", "Mercury",
+        "Borax", "Graphite", "Mica"
+    ],
+    // Class 2: Advanced/Rare Earth - High tech, high refining requirement
+    resourcesClass2: [
+        "Silicon", "Lithium", "Cobalt", "Platinum", "Palladium", "Uranium",
+        "Plutonium", "Titanium", "Tungsten", "Neodymium", "Cerium", "Iridium",
+        "Osmium", "Rhodium", "Germanium", "Indium", "Gallium", "Selenium",
+        "Tellurium", "Yttrium", "Scandium", "Zirconium", "Beryllium", "Tantalum", "Niobium"
+    ],
+    // Class 3: Aetheric/Fantastic - Magical, extra-dimensional, extreme value
+    resourcesClass3: [
+        "Mana Crystals", "Aether", "Dragon Scales", "Phoenix Feathers", "Mithril",
+        "Adamantium", "Orichalcum", "Moonstone", "Sunstone", "Shadow Essence",
+        "Spirit Dew", "Griffin Claw", "Unicorn Horn", "Troll Blood", "Elven Wood",
+        "Necrotic Dust", "Arcane Residue", "Enchanted Sap", "Wyrmbone", "Runestone",
+        "Feywild Petals", "Kraken Ink", "Basilisk Venom", "Magefire Ember", "Void Matter"
+    ],
+    fauna: [
+        "Pyros", "Aquashell", "Leafleap", "Voltwing", "Shadowprowl", "Frostbite", "Blazewing", "Dewdrop", "Vinewhip", "Sparktail", "Emberclaw",
+        "Glaciermane", "Mossyback", "Thunderpaw", "Gloommane", "Scorchtail", "Torrential", "Petalburst", "Electromane", "Nightshade", "Magmabite",
+        "Rippletail", "Thornspike", "Boltstrike", "Phantomfin", "Flarefin", "Icicleclaw", "Rootbound", "Zappity", "Wraithwing", "Burnis", "Mistwing",
+        "Bloomheart", "Shockwave", "Eerieeye", "Heatwave", "Deepsea", "Fernfury", "Energiz", "Darkclaw", "Cindertrot", "Tidebound", "Sporecloud",
+        "Wattbite", "Umbraheart", "Ashpaw", "Glaciemont", "Brambleclaw", "Voltstrike", "Shadeburst", "Pyrewing", "Hydrofin", "Florasom", "Electrosound",
+        "Nocturnis", "Igniscore", "Aquastream", "Terraroot", "Aeroflight", "Spiritwhisper", "Darkpulse", "Steelfang", "Fairydust", "Dragonbreath",
+        "Iceberg", "Rockcrush", "Groundswell", "Bugbite", "Poisonsting", "Flywing", "Emberwing", "Aquaspin", "Terrabite", "Aeroshift", "Spiritclaw",
+        "Darkfin", "Steelwing", "Fairysong", "Dragonscale", "Icebolt", "Rockshard", "Groundspike", "Bugswarm", "Poisondart", "Flyburst", "Emberglow",
+        "Aquaflow", "Terradrift", "Aerogale", "Spiritmist", "Darksurge", "Steelcrush", "Fairypuff", "Dragonfire", "Icefang", "Rockspin", "Groundbite",
+        "Bugwing", "Poisonclaw", "Flytail", "Solarflare", "Lunarshade", "Starburst", "Voidwalker", "Zenwing", "Primeclaw", "Aerobite", "Bioleaf",
+        "Cyberfang", "Dracozord", "Gigamane", "Megawing", "Nanospark", "Neofin", "Omnishell", "Protobite", "Xenopulse", "Emberdrift", "Aquasurge",
+        "Terrablast", "Aerostorm", "Spiritflare", "Darkwing", "Steelbolt", "Fairydash", "Dragonclaw", "Icepulse", "Rockburst", "Groundcrush", "Bugsting",
+        "Poisonbite", "Flyglow", "Emberdash", "Aquaflare", "Terrawave", "Aeropulse", "Spiritdent", "Darkdrift", "Steelspin", "Fairyspark", "Icefin",
+        "Rockwing", "Groundtail", "Bugclaw", "Poisonwing", "Flybolt", "Solarwing", "Lunarclaw", "Starfin", "Voidbite", "Zenpulse", "Primebolt", "Aeroshine",
+        "Bioburst", "Cyberglow", "Dracoflag", "Gigapulse", "Megabite", "Nanowing", "Neosurge", "Omnidark", "Protobolt", "Xenoflare", "Aquashine",
+        "Terraspark", "Aeroblaze", "Spiritwing", "Darkflare", "Steelsurge", "Fairydrift", "Dragonburst", "Iceglow", "Rockpulse", "Groundshine", "Bugbolt",
+        "Poisondash", "Flyspark", "Emberlight", "Aquadusk", "Terradawn", "Aerobright", "Spiritglow", "Darkshine", "Steeldrift", "Fairyburst", "Dragonwave",
+        "Rockshade", "Groundflare", "Bugsurge", "Poisonglow", "Flydance", "Emberstrike", "Aquaflash", "Terracrunch", "Aeroflare", "Spiritbound"
+    ],
+    flora: [
+        "Aetherbloom", "Shadowpetal", "Glowroot", "Frostfern", "Pyreleaf", "Duskvine", "Dawnblossom", "Mistmoss", "Stormspore", "Emberseed", "Lunarlily",
+        "Solarrose", "Voidvine", "Terrathorn", "Aquapetal", "Aeroleaf", "Hydrostem", "Floraflame", "Biobud", "Cyberclover", "Magmamoss", "Glacialgrain",
+        "Spiritsprout", "Darkdew", "Lightleaf", "Ironroot", "Steelstem", "Goldpetal", "Silverseed", "Bronzebranch", "Copperclover", "Zinczinnia",
+        "Nickelnectar", "Cobaltclover", "Rubyrose", "Sapphiresprout", "Emeraldedge", "Diamonddew", "Opalorchid", "Pearlpoppy", "Amberash", "Jetjasmine",
+        "Onyxoxalis", "Quartzquince", "Topaztulip", "Berylbud", "Peridotpetal", "Citrineclover", "Garnetgrain", "Amethystash", "Zirconzinnia", "Moonmoss",
+        "Sunseed", "Starspore", "Skystem", "Seaseed", "Earthedge", "Rainroot", "Cloudclover", "Thunderthorn", "Lightningleaf", "Firefern", "Waterweed",
+        "Airash", "Dustdrift", "Mudmoss", "Sandseed", "Rockrose", "Stonestem", "Pebblepetal", "Boulderbloom", "Mountainmoss", "Valleyvine", "Riverroot",
+        "Lakeleaf", "Oceanorchid", "Seasprout", "Forestfern", "Junglejasmine", "Desertdew", "Tundrathorn", "Prairiepoppy", "Meadowmoss", "Gardenglow",
+        "Orchardoxalis", "Grovegrain", "Bushbud", "Treethorn", "Branchbloom", "Twigtendril", "Sapseed", "Resinrose", "Barkbloom", "Leaflight",
+        "Petalpulse", "Rootrevel", "Vineveil", "Sporespire", "Mossmantle", "Fernfringe", "Bloombeam", "Thornthistle", "Seedshadow", "Budburst", "Stemstrong",
+        "Petalpale", "Leaflush", "Rootrough", "Vinevibrant", "Sporesoft", "Mossmighty", "Fernfine", "Bloombright", "Thornthick", "Seedsmall", "Budbig",
+        "Stemsturdy", "Petalpretty", "Leaflovely", "Rootrugged", "Vinevast", "Sporesparse", "Mossmassive", "Fernfragile", "Bloombold", "Thorntough",
+        "Seedstrong", "Budbrief", "Stemsteady", "Petalpink", "Leafgreen", "Rootbrown", "Vinedark", "Sporewhite", "Mossgrey", "Fernlight", "Bloomgold",
+        "Thornblack", "Seedtiny", "Budsmall", "Stemlong", "Petalsoft", "Leafhard", "Rootdeep", "Vinehigh", "Sporewide", "Mossthick", "Fernthin",
+        "Bloomlarge", "Thornsharp", "Seedround", "Budround", "Stemstraight", "Petalcurved", "Leafpointed", "Roottwisted", "Vineclimbing", "Sporedrifting",
+        "Mosscovering", "Fernspreading", "Bloomfading", "Thornpiercing", "Seedfalling", "Budemerging", "Stemgrowing", "Petalshimmering", "Leafglistening",
+        "Rootanchoring", "Vineentwining", "Sporedispersing", "Mosscarpeting", "Fernundulating", "Bloomradiating", "Thornprotecting", "Seedgerminating",
+        "Budswelling", "Stemstrengthening", "Petalfluttering", "Leafrustling", "Rootpenetrating", "Vineencircling", "Sporefloating", "Mosscushioning",
+        "Fernfronding", "Bloomscenting", "Thornbarbing", "Seednesting", "Budopening", "Stemtowering", "Petaldancing", "Leafswaying", "Rootburrowing",
+        "Vinesnaring", "Sporeraining", "Mosslayering", "Fernshading", "Bloomglowing", "Thornstinging", "Seedplanting", "Budbursting", "Stemrising",
+        "Petalfalling", "Leafdropping", "Rootspreading", "Vinecreeping", "Sporedrifting", "Mossgrowing", "Fernlush", "Bloomvibrant", "Thornfierce",
+        "Seedvital", "Budfresh", "Stemrobust", "Petaldelicate", "Leafresilient", "Rootenduring", "Vinetenacious", "Sporemagical", "Mossancient",
+        "Fernmystic", "Bloomethereal", "Thornshadowy", "Seedluminous", "Budradiant", "Stemmajestic", "Petalenchanting", "Leafverdant", "Rootprimordial",
+        "Vineeternal", "Sporeinfinite", "Mosseverlasting", "Ferntimeless", "Bloomcelestial", "Thorninfernal", "Seedterrestrial", "Budelemental",
+        "Stemmonumental", "Petalgraceful", "Leafelegant", "Rootpowerful", "Vinesupple"
+    ],
+    crimeType: ["theft", "burglary", "robbery", "assault", "homicide", "fraud", "drug-related crime", "cybercrime", "vandalism", "domestic violence"],
+    climeteType: [
+        "Pyroclasic", "Glacial", "Aetheric", "Void-vacuum", "Magmatic", "Cryogenic", "Solar-scorched", "Umbral", "Tempestuous", "Hydro-mist",
+        "Arid-cinder", "Celestial", "Abyssal", "Verdant-tropical", "Permafrost", "Mana-saturated", "Chrono-flux", "Nebulous", "Tidal", "Plasma-heat"
+    ],
+    names: [
+        "Korg", "Grak", "Bram", "Drun", "Krag", "Bor", "Grond", "Thrum", "Brak", "Grom",
+        "Krell", "Durn", "Karg", "Skarn", "Zorn", "Blud", "Grol", "Kragur", "Drunm", "Brakar",
+        "Grut", "Korm", "Darg", "Thror", "Brunt", "Algrim", "Balthor", "Delgrim", "Magni", "Thorgrim",
+        "Rurik", "Beldur", "Mordak", "Galdur", "Throrin", "Arum", "Kaelen", "Valdur", "Morgrim", "Bardur",
+        "Orin", "Dagnir", "Remur", "Magrum", "Belgrim", "Thrain", "Adrik", "Torund", "Grolan", "Elgrim",
+        "Borin", "Durnic", "Garund", "Kaelin", "Mordin", "Norin", "Rudim", "Skulm", "Torin", "Undar",
+        "Vargin", "Worgum", "Yulgrim", "Zargun", "Bron", "Durgon", "Grelm", "Horgum", "Irum", "Krellin",
+        "Marund", "Narg", "Ogrim", "Parg", "Rorg", "Balder", "Thorin", "Gloin", "Dwalin", "Baliin",
+        "Bifur", "Bofur", "Bombur", "Ori", "Korgar", "Bramm", "Durin", "Thror", "Magni", "Grimgar",
+        "Borak", "Drunir", "Kargen", "Grolin", "Brolin", "Dargin", "Kaelum", "Thorund", "Magar", "Kraglin",
+        "Aeliana", "Aerendil", "Althaea", "Amariel", "Anariel", "Arandir", "Arwen", "Aethelgard", "Aeryn", "Aelwyn",
+        "Belthil", "Baelen", "Caerwyn", "Celeborn", "Cirdan", "Cyra", "Caerith", "Coranthir", "Colariel", "Caelum",
+        "Daelin", "Doralia", "Dryn", "Daelith", "Duviel", "Draenor", "Delyth", "Darian", "Delara", "Dorthon",
+        "Elrond", "Elros", "Earendil", "Elwing", "Elowen", "Eldrin", "Elara", "Elessar", "Elaris", "Elowyn",
+        "Faerandil", "Faelivrin", "Faelan", "Faelith", "Faramir", "Fendrel", "Finrod", "Finduilas", "Fiora", "Fylora",
+        "Galadriel", "Galanthir", "Galathion", "Galanthos", "Galandor", "Galen", "Galaer", "Galieth", "Galaris", "Galthir",
+        "Glorfindel", "Gloin", "Glariel", "Glindor", "Glynn", "Gwyneira", "Gwenyth", "Gwendolyn", "Gwenlor", "Gwelys",
+        "Haldir", "Haldor", "Haelen", "Haelith", "Halan", "Haldir", "Halyon", "Haniel", "Hareth", "Helion",
+        "Idril", "Illyria", "Ithilien", "Ithildin", "Ithilwen", "Iolanthe", "Ioviel", "Iradel", "Isilme", "Ithil",
+        "Luthien", "Legolas", "Lariel", "Larieth", "Lathariel", "Lendal", "Lindir", "Lirael", "Lorith", "Lyra",
+        "Luviel", "Lumina", "Lunariel", "Luthien", "Lythian", "Lylara", "Lysanthir", "Lysandra", "Lysanth", "Lysia",
+        "Maerwen", "Malekith", "Malfurion", "Malith", "Malyne", "Marandil", "Marath", "Melanthe", "Melian", "Melisande",
+        "Melora", "Melthir", "Meranth", "Meridell", "Meryn", "Mila", "Milariel", "Milas", "Mithrandir", "Mithros",
+        "Morwen", "Morwena", "Morgwynn", "Morvath", "Morwen", "Mythendil", "Mythendor", "Naertho", "Nandor", "Naerith",
+        "Nariel", "Naryon", "Nelaeth", "Nelthir", "Neryn", "Nidariel", "Nildor", "Nilora", "Nimue", "Nimriel",
+        "Nivaria", "Nolwen", "Noriel", "Nyx", "Nyxara", "Nyxandra", "Nyxariel", "Olorin", "Olyndra", "Oryth",
+        "Paereth", "Paelen", "Palaer", "Phaeris", "Phaerion", "Pharamir", "Phylora", "Phyllis", "Prydan", "Pytheas",
+        "Quelenna", "Quendil", "Quendris", "Quessariel", "Quilla", "Quillan", "Quindor", "Quintessa", "Quirion", "Quivara",
+        "Raelin", "Raelith", "Raenor", "Raelia", "Raelis", "Ralaer", "Ralath", "Ralandir", "Raleth", "Ralin",
+        "Ralthir", "Ramiel", "Ramir", "Ranar", "Randir", "Raneth", "Ranthir", "Rariel", "Raris", "Rathan",
+        "Rathwen", "Raunor", "Raelith", "Raelin", "Raelis", "Ralaer", "Ralath", "Ralandir", "Raleth", "Ralin",
+        "Ralthir", "Ramiel", "Ramir", "Ranar", "Randir", "Raneth", "Ranthir", "Rariel", "Raris", "Rathan",
+        "Rathwen", "Raunor", "Saelen", "Saelith", "Saerwyn", "Salara", "Salindor", "Salyth", "Samariel", "Sandor",
+        "Sariel", "Sarith", "Saryon", "Sauron", "Selene", "Selendil", "Selestia", "Selina", "Selith", "Selwyn",
+        "Seraphina", "Seren", "Serindil", "Seris", "Seryth", "Shael", "Shaelor", "Shalindra", "Shalith", "Shara",
+        "Shariel", "Shavira", "Shendel", "Silas", "Silmarien", "Silmaril", "Silvane", "Silvanis", "Silvaris", "Silven",
+        "Silyth", "Sinariel", "Sindar", "Sindariel", "Sindarin", "Sineth", "Sinora", "Sinthia", "Sinthir", "Sirion",
+        "Sithara", "Sithriel", "Sivara", "Sivaria", "Sivwen", "Skadi", "Skaelen", "Skariel", "Skath", "Slen",
+        "Slyth", "Solariel", "Solas", "Solendil", "Solon", "Solwyn", "Sora", "Soranthir", "Soriel", "Sorith",
+        "Sylara", "Sylaris", "Sylas", "Syldar", "Syleth", "Sylvan", "Sylvana", "Sylvanis", "Sylvar", "Sylvari",
+        "Taelen", "Taelith", "Taerel", "Taerion", "Taelin", "Taelis", "Taelwyn", "Talaris", "Talath", "Thaladir",
+        "Thalandir", "Thalaron", "Thalath", "Thalendir", "Thalen", "Thaleth", "Thalion", "Thalith", "Thalwen", "Thanduil",
+        "Tharion", "Tharwyn", "Thasira", "Thavara", "Thendril", "Thendros", "Theron", "Thilara", "Thilwen", "Thirion",
+        "Thorondor", "Thranduil", "Thraen", "Thraenor", "Thranis", "Thravan", "Tree", "Trellis", "Tria", "Trindil",
+        "Tyriel", "Tyryn", "Valerion", "Valerith", "Valendril", "Valen", "Valerius", "Valerith", "Valindra", "Valeris",
+        "Valerwyn", "Valerion", "Valindor", "Valinthir", "Valora", "Varda", "Varis", "Varith", "Varyon", "Velen",
+        "Velentia", "Velith", "Veloria", "Velwyn", "Vercia", "Veren", "Verindil", "Verith", "Vespera", "Vesperion",
+        "Viconia", "Vila", "Vilariel", "Vilora", "Vinariel", "Vineth", "Vinora", "Viridia", "Visara", "Viserion",
+        "Xanathir", "Xandril", "Xanthia", "Xanthe", "Xanthos", "Xarion", "Xaviera", "Xenon", "Xerxes", "Xylia",
+        "Ylva", "Yndra", "Ynora", "Yrlis", "Ysabel", "Yselle", "Yvaine", "Yvandra", "Yvren", "Ywyn"
+    ],
+    nameSuffixes: [
+        // Heroic & Noble
+        "the Great", "the Brave", "the Just", "the Valiant", "the Mighty", "the Strong", "the Swift", "the Wise", "the Gracious", "the Benevolent",
+        "the Unbroken", "the Eternal", "the Ancient", "the True", "the Pure", "the Holy", "the Sacred", "the Divine", "the Renowned", "the Legendary",
+        "the Fabled", "the Resolute", "the Steadfast", "the Dauntless", "the Fearless", "the Unyielding", "the Relentless", "the Ironbound", "the Golden", "the Silver",
+
+        // Dark & Sinister
+        "the Cruel", "the Merciless", "the Dread", "the Terrible", "the Malicious", "the Sinister", "the Vengeful", "the Ruthless", "the Savage", "the Corrupt",
+        "the Unholy", "the Profane", "the Demonic", "the Dark", "the Shadow", "the Fallen", "the Broken", "the Lost", "the Forsaken", "the Cursed",
+        "the Bloodstained", "the Deathless", "the Grim", "the Dreaded", "the Maleficent", "the Sinister", "the Blighted", "the Scourged", "the Hollow", "the Void",
+
+        // Elemental & Nature
+        "the Storm", "the Flame", "the Frost", "the Light", "the Shadow", "the Wild", "the Tamed", "the Blazing", "the Frozen", "the Scorched",
+        "the Ashen", "the Oceanic", "the Lunar", "the Solar", "the Stellar", "the Astral", "the Cosmic", "the Earthbound", "the Skyborn", "the Tempest",
+        "the Thunderous", "the Whispering", "the Blustery", "the Glacial", "the Volcanic", "the Verdant", "the Sylvan", "the Oceanic", "the Earthen", "the Zephyr",
+
+        // Mystical & Arcane
+        "the Keeper", "the Watcher", "the Guardian", "the Seeker", "the Wanderer", "the Hunter", "the Slayer", "the Creator", "the Destroyer", "the Conqueror",
+        "the Hidden", "the Revealed", "the Silent", "the Cryptic", "the Enigmatic", "the Mysterious", "the Obscure", "the Arcane", "the Eldritch", "the Mystic",
+        "the Seer", "the Oracle", "the Prophet", "the Mage", "the Sorcerer", "the Awakened", "the Reborn", "the Eternal", "the Infinite", "the Boundless",
+
+        // Status & Identity
+        "the Exile", "the Outcast", "the Stranger", "the Wanderer", "the Nomad", "the Pilgrim", "the King", "the Queen", "the Lord", "the Lady",
+        "the Prince", "the Princess", "the Knight", "the Rogue", "the Assassin", "the Monk", "the Scholar", "the Scribe", "the Warden", "the Sentinel",
+    ],
+    fantasyCities: [
+        "Aethelgard", "Ironhold", "Shadowfen", "Stormpeak", "Silverport", "Dreadmoor", "Goldcrest", "Misthaven", "Dragonspire", "Winterfell",
+        "Everdawn", "Moonreach", "Sunvale", "Starforge", "Frostgate", "Oakheart", "Ravenloft", "Blackwater", "Deepwell", "Highgarden",
+        "Stonekeep", "Shadowcrag", "Windhaven", "Tideport", "Amberhold", "Silverleaf", "Stormsurge", "Nightfall", "Cloudreach", "Duskvale",
+        "Brightwater", "Grimfort", "Steelgate", "Wyrmrest", "Frostpeak", "Oakvale", "Shadowgate", "Ironspire", "Mooncrest", "Sunhold",
+        "Starhaven", "Deepforge", "Mistmantle", "Goldhaven", "Silverreach", "Dragoncrest", "Stormwatch", "Winterhold", "Evergreen", "Darkwater",
+        "Lightspire", "Shadowvale", "Irongate", "Stoneport", "Windcrest", "Moonlight", "Sunspire", "Starfell", "Frosthold", "Oakridge",
+        "Ravenhold", "Blackcrest", "Deepreach", "Highvale", "Aethelport", "Ironhaven", "Shadowpeak", "Stormgate", "Silvercrest", "Dreadhold",
+        "Goldforge", "Mistspire", "Dragonhold", "Wintergate", "Everreach", "Moonvale", "Suncrest", "Starforge", "Frostcrest", "Oakgate",
+        "Ravenport", "Blackhold", "Deepspire",
+        "Aurelia", "Valerion", "Celestia", "Luminara", "Astrum", "Eldoria", "Solstice", "Argentum", "Aurelia", "Thalassa",
+        "Xylos", "Zandalar", "Aeris", "Nyx", "Helios", "Luna", "Terra", "Ignis", "Aqua", "Ventus",
+        "Eldritch", "Arcanium", "Mystara", "Oracle", "Zenith", "Nadir", "Apex", "Vertex", "Aether", "Void",
+        "Primordia", "Genesis", "Omega", "Alpha", "Sigma", "Delta", "Epsilon", "Zeta", "Eta", "Theta",
+        "Valerius", "Aethelred", "Caspian", "Dorian", "Elara", "Fionn", "Gideon", "Hestia", "Isolde", "Julian",
+        "Kaelen", "Lyra", "Marius", "Nadia", "Orion", "Phaedra", "Quentin", "Rhea", "Silas", "Tessa",
+        "Ulysses", "Vesper", "Willa", "Xanthe", "Yara", "Zane", "Aria", "Balthazar", "Cassian", "Dante",
+        "Everard", "Flavia", "Gaius", "Hadrian", "Irene", "Jasper", "Kora", "Leander", "Mira", "Nico",
+        "Odin", "Petra", "Quintus", "Roman", "Selene", "Titus", "Ursula", "Vesta", "Wren", "Xerxes",
+        "Yvaine", "Zelda", "Alaric", "Beatrix", "Cyrus", "Diana", "Enzo", "Flora", "Gus", "Hazel",
+        "Ivan", "June", "Kai", "Leo", "Max", "Nina", "Otto", "Pip", "Quinn", "Rex",
+        "Sia", "Ty", "Uma", "Vic", "Wes", "Xia", "Yul", "Ziv", "Ada", "Bo",
+        "Cy", "Di", "Ed", "Fi", "Gi", "Hi", "Io", "Jo", "Ka", "Lu",
+        "Ma", "Ni", "Oz", "Pa", "Qi", "Re", "Si", "Tu", "Ul", "Vi",
+        "Wy", "Xi", "Yu", "Zi", "Ar", "Be", "Ce", "De", "Ef", "Ge",
+        "Ha", "Ii", "Je", "Ke", "Le", "Me", "Ne", "Oe", "Pe", "Que",
+        "Rea", "Se", "Te", "Ue", "Ve", "We", "Xe", "Ye", "Ze", "Aa",
+        "Blackwood", "Shadowfen", "Darkmoor", "Gloomhaven", "Nightvale", "Dreadfort", "Grimhold", "Mournvale", "Sorrowreach", "Blightwood",
+        "Mistmantle", "Foggybottom", "Cloudcrest", "Stormpeak", "Thunderhold", "Lightninggate", "Rainshadow", "Snowdrift", "Frostbite", "Icecrag",
+        "Ironforge", "Steelhaven", "Copperport", "Silverbay", "Goldcoast", "Bronzehold", "Tinreach", "Zincspire", "Leadgate", "Cobaltcrest",
+        "Oakgrove", "Willowvale", "Pinecrest", "Cedarhold", "Birchwood", "Elmreach", "Maplegate", "Ashvale", "Yewforest", "Sprucepeak",
+        "Riverend", "Brookside", "Streamvale", "Waterfall", "Lakehaven", "Oceanport", "Seaspray", "Tidecrest", "Wavebreak", "Baywatch",
+        "Dragonfire", "Wyrmtooth", "Drakehold", "Serpentsreach", "Basiliskgate", "Hydraforge", "Chimerapeak", "Griffingrove", "Phoenixrise", "Krakenbay",
+        "Wolfden", "Bearmountain", "Eagleeye", "Lionheart", "Tigerclaw", "Stagrun", "Boarhead", "Ravenwing", "Falconcrest", "Hawkspire",
+        "Shadowfell", "Shadowfen", "Shadowmoor", "Shadowvale", "Shadowgate", "Shadowreach", "Shadowpeak", "Shadowwood", "Shadowcrag", "Shadowport",
+        "Lighthaven", "Suncrest", "Starfall", "Moonlight", "Daybreak", "Dawnreach", "Duskhold", "Twilight", "Noonshade", "Midnight",
+        "Everfrost", "Evergreen", "Everdark", "Evergold", "Evermist", "Everpeak", "Everwood", "Everstone", "Evergate", "Everwatch",
+        "Northstar", "Southport", "Eastgate", "Westvale", "Northkeep", "Southreach", "Eastforge", "Westcrest", "Northwood", "Southbay",
+        "Kingslanding", "Queensport", "Princesgate", "Duchessvale", "Baronhold", "Earlreach", "Knightspire", "Squireden", "Lordhaven", "Ladycrest",
+        "Crownpoint", "Sceptrehold", "Throneroom", "Regalcrest", "Noblevale", "Royalport", "Imperialgate", "Majestypeak", "Sovereignreach", "Monarchwood",
+        "Dragonspire", "Wyrmrest", "Drakehold", "Firedrake", "Emberside", "Ashfall", "Cindercrest", "Blazewatch", "Scorchvale", "Burnside",
+        "Frostpeak", "Icehold", "Glaciergate", "Snowfall", "Winterreach", "Coldhaven", "Chillspire", "Frozenvale", "Arcticport", "Tundrakeep",
+        "Stormcrest", "Thunderbolt", "Lightningreach", "Rainwood", "Cloudspire", "Mistvalley", "Foggyhold", "Dewdrop", "Stormgate", "Windyreach",
+        "Stonehaven", "Rockfort", "Boulderpeak", "Craghold", "Granitegate", "Slatecrest", "Marblevale", "Quartzreach", "Flintwood", "Obsidianport",
+        "Goldleaf", "Silverpine", "Bronzeguard", "Coppermine", "Ironclad", "Steelbound", "Titanhold", "Giantreach", "Dwarfforge", "Elfwood",
+        "Orcbash", "Goblinmarket", "Trollbridge", "Ogrepeak", "Hobbiton", "Halflinghaven", "Wizardspire", "Magehold", "Sorcer", "Enchantervale",
+        "Shadowfen", "Darkwater", "Blackwood", "Grimhold", "Dreadfort", "Mournvale", "Sorrowreach", "Blightwood", "Nightfall", "Gloomhaven",
+        "Mistmantle", "Foggybottom", "Cloudcrest", "Stormpeak", "Thunderhold", "Lightninggate", "Rainshadow", "Snowdrift", "Frostbite", "Icecrag",
+        "Ironforge", "Steelhaven", "Copperport", "Silverbay", "Goldcoast", "Bronzehold", "Tinreach", "Zincspire", "Leadgate", "Cobaltcrest",
+        "Oakgrove", "Willowvale", "Pinecrest", "Cedarhold", "Birchwood", "Elmreach", "Maplegate", "Ashvale", "Yewforest", "Sprucepeak",
+        "Riverend", "Brookside", "Streamvale", "Waterfall", "Lakehaven", "Oceanport", "Seaspray", "Tidecrest", "Wavebreak", "Baywatch",
+        "Dragonfire", "Wyrmtooth", "Drakehold", "Serpentsreach", "Basiliskgate", "Hydraforge", "Chimerapeak", "Griffingrove", "Phoenixrise", "Krakenbay",
+        "Wolfden", "Bearmountain", "Eagleeye", "Lionheart", "Tigerclaw", "Stagrun", "Boarhead", "Ravenwing", "Falconcrest", "Hawkspire",
+        "Shadowfell", "Shadowfen", "Shadowmoor", "Shadowvale", "Shadowgate", "Shadowreach", "Shadowpeak", "Shadowwood", "Shadowcrag", "Shadowport",
+        "Lighthaven", "Suncrest", "Starfall", "Moonlight", "Daybreak", "Dawnreach", "Duskhold", "Twilight", "Noonshade", "Midnight",
+        "Everfrost", "Evergreen", "Everdark", "Evergold", "Evermist", "Everpeak", "Everwood", "Everstone", "Evergate", "Everwatch",
+        "Northstar", "Southport", "Eastgate", "Westvale", "Northkeep", "Southreach", "Eastforge", "Westcrest", "Northwood", "Southbay",
+        "Kingslanding", "Queensport", "Princesgate", "Duchessvale", "Baronhold", "Earlreach", "Knightspire", "Squireden", "Lordhaven", "Ladycrest",
+        "Crownpoint", "Sceptrehold", "Throneroom", "Regalcrest", "Noblevale", "Royalport", "Imperialgate", "Majestypeak", "Sovereignreach", "Monarchwood",
+        "Dragonspire", "Wyrmrest", "Drakehold", "Firedrake", "Emberside", "Ashfall", "Cindercrest", "Blazewatch", "Scorchvale", "Burnside",
+        "Frostpeak", "Icehold", "Glaciergate", "Snowfall", "Winterreach", "Coldhaven", "Chillspire", "Frozenvale", "Arcticport", "Tundrakeep",
+        "Stormcrest", "Thunderbolt", "Lightningreach", "Rainwood", "Cloudspire", "Mistvalley", "Foggyhold", "Dewdrop", "Stormgate", "Windyreach",
+        "Stonehaven", "Rockfort", "Boulderpeak", "Craghold", "Granitegate", "Slatecrest", "Marblevale", "Quartzreach", "Flintwood", "Obsidianport",
+        "Goldleaf", "Silverpine", "Bronzeguard", "Coppermine", "Ironclad", "Steelbound", "Titanhold", "Giantreach", "Dwarfforge", "Elfwood",
+        "Orcbash", "Goblinmarket", "Trollbridge", "Ogrepeak", "Hobbiton", "Halflinghaven", "Wizardspire", "Magehold", "Sorcerer", "Enchantervale",
+        "Shadowfen", "Darkwater", "Blackwood", "Grimhold", "Dreadfort", "Mournvale", "Sorrowreach", "Blightwood", "Nightfall", "Gloomhaven",
+        "Mistmantle", "Foggybottom", "Cloudcrest", "Stormpeak", "Thunderhold", "Lightninggate", "Rainshadow", "Snowdrift", "Frostbite", "Icecrag",
+        "Ironforge", "Steelhaven", "Copperport", "Silverbay", "Goldcoast", "Bronzehold", "Tinreach", "Zincspire", "Leadgate", "Cobaltcrest",
+        "Oakgrove", "Willowvale", "Pinecrest", "Cedarhold", "Birchwood", "Elmreach", "Maplegate", "Ashvale", "Yewforest", "Sprucepeak",
+        "Riverend", "Brookside", "Streamvale", "Waterfall", "Lakehaven", "Oceanport", "Seaspray", "Tidecrest", "Wavebreak", "Baywatch",
+        "Dragonfire", "Wyrmtooth", "Drakehold", "Serpentsreach", "Basiliskgate", "Hydraforge", "Chimerapeak", "Griffingrove", "Phoenixrise", "Krakenbay",
+        "Wolfden", "Bearmountain", "Eagleeye", "Lionheart", "Tigerclaw", "Stagrun", "Boarhead", "Ravenwing", "Falconcrest", "Hawkspire",
+        "Shadowfell", "Shadowfen", "Shadowmoor", "Shadowvale", "Shadowgate", "Shadowreach", "Shadowpeak", "Shadowwood", "Shadowcrag", "Shadowport",
+        "Lighthaven", "Suncrest", "Starfall", "Moonlight", "Daybreak", "Dawnreach", "Duskhold", "Twilight", "Noonshade", "Midnight",
+        "Everfrost", "Evergreen", "Everdark", "Evergold", "Evermist", "Everpeak", "Everwood", "Everstone", "Evergate", "Everwatch",
+        "Northstar", "Southport", "Eastgate", "Westvale", "Northkeep", "Southreach", "Eastforge", "Westcrest", "Northwood", "Southbay",
+        "Kingslanding", "Queensport", "Princesgate", "Duchessvale", "Baronhold", "Earlreach", "Knightspire", "Squireden", "Lordhaven", "Ladycrest",
+        "Crownpoint", "Sceptrehold", "Throneroom", "Regalcrest", "Noblevale", "Royalport", "Imperialgate", "Majestypeak", "Sovereignreach", "Monarchwood",
+        "Dragonspire", "Wyrmrest", "Drakehold", "Firedrake", "Emberside", "Ashfall", "Cindercrest", "Blazewatch", "Scorchvale", "Burnside",
+        "Frostpeak", "Icehold", "Glaciergate", "Snowfall", "Winterreach", "Coldhaven", "Chillspire", "Frozenvale", "Arcticport", "Tundrakeep",
+        "Stormcrest", "Thunderbolt", "Lightningreach", "Rainwood", "Cloudspire", "Mistvalley", "Foggyhold", "Dewdrop", "Stormgate", "Windyreach",
+        "Stonehaven", "Rockfort", "Boulderpeak", "Craghold", "Granitegate", "Slatecrest", "Marblevale", "Quartzreach", "Flintwood", "Obsidianport",
+        "Goldleaf", "Silverpine", "Bronzeguard", "Coppermine", "Ironclad", "Steelbound", "Titanhold", "Giantreach", "Dwarfforge", "Elfwood",
+        "Orcbash", "Goblinmarket", "Trollbridge", "Ogrepeak", "Hobbiton", "Halflinghaven", "Wizardspire", "Magehold", "Sorcerer", "Enchantervale",
+        "Shadowfen", "Darkwater", "Blackwood", "Grimhold", "Dreadfort", "Mournvale", "Sorrowreach", "Blightwood", "Nightfall", "Gloomhaven",
+        "Mistmantle", "Foggybottom", "Cloudcrest", "Stormpeak", "Thunderhold", "Lightninggate", "Rainshadow", "Snowdrift", "Frostbite", "Icecrag",
+        "Ironforge", "Steelhaven", "Copperport", "Silverbay", "Goldcoast", "Bronzehold", "Tinreach", "Zincspire", "Leadgate", "Cobaltcrest",
+        "Oakgrove", "Willowvale", "Pinecrest", "Cedarhold", "Birchwood", "Elmreach", "Maplegate", "Ashvale", "Yewforest", "Sprucepeak",
+        "Riverend", "Brookside", "Streamvale", "Waterfall", "Lakehaven", "Oceanport", "Seaspray", "Tidecrest", "Wavebreak", "Baywatch",
+        "Dragonfire", "Wyrmtooth", "Drakehold", "Serpentsreach", "Basiliskgate", "Hydraforge", "Chimerapeak", "Griffingrove", "Phoenixrise", "Krakenbay",
+        "Wolfden", "Bearmountain", "Eagleeye", "Lionheart", "Tigerclaw", "Stagrun", "Boarhead", "Ravenwing", "Falconcrest", "Hawkspire",
+        "Shadowfell", "Shadowfen", "Shadowmoor", "Shadowvale", "Shadowgate", "Shadowreach", "Shadowpeak", "Shadowwood", "Shadowcrag", "Shadowport",
+        "Lighthaven", "Suncrest", "Starfall", "Moonlight", "Daybreak", "Dawnreach", "Duskhold", "Twilight", "Noonshade", "Midnight",
+        "Everfrost", "Evergreen", "Everdark", "Evergold", "Evermist", "Everpeak", "Everwood", "Everstone", "Evergate", "Everwatch",
+        "Northstar", "Southport", "Eastgate", "Westvale", "Northkeep", "Southreach", "Eastforge", "Westcrest", "Northwood", "Southbay",
+        "Kingslanding", "Queensport", "Princesgate", "Duchessvale", "Baronhold", "Earlreach", "Knightspire", "Squireden", "Lordhaven", "Ladycrest",
+        "Crownpoint", "Sceptrehold", "Throneroom", "Regalcrest", "Noblevale", "Royalport", "Imperialgate", "Majestypeak", "Sovereignreach", "Monarchwood",
+        "Dragonspire", "Wyrmrest", "Drakehold", "Firedrake", "Emberside", "Ashfall", "Cindercrest", "Blazewatch", "Scorchvale", "Burnside",
+        "Frostpeak", "Icehold", "Glaciergate", "Snowfall", "Winterreach", "Coldhaven", "Chillspire", "Frozenvale", "Arcticport", "Tundrakeep",
+        "Stormcrest", "Thunderbolt", "Lightningreach", "Rainwood", "Cloudspire", "Mistvalley", "Foggyhold", "Dewdrop", "Stormgate", "Windyreach",
+        "Stonehaven", "Rockfort", "Boulderpeak", "Craghold", "Granitegate", "Slatecrest", "Marblevale", "Quartzreach", "Flintwood", "Obsidianport",
+        "Goldleaf", "Silverpine", "Bronzeguard", "Coppermine", "Ironclad", "Steelbound", "Titanhold", "Giantreach", "Dwarfforge", "Elfwood",
+        "Orcbash", "Goblinmarket", "Trollbridge", "Ogrepeak", "Hobbiton", "Halflinghaven", "Wizardspire", "M...", "Sorcerer", "Enchantervale",
+        "Brimstone", "Quicksilver", "Pyrite", "Galena", "Cinnabar", "Malachite", "Lazuli", "Peridot", "Zircon", "Topaz",
+        "Amethyst", "Onyx", "Citrine", "Garnet", "Spinel", "Tourmaline", "Beryl", "Aquamarine", "Moonstone", "Sunstone",
+        "Bloodstone", "Fireopal", "Electrum", "Orichalcum", "Adamantine", "Mithril", "Etherium", "Celestium", "Veridium", "Argentis",
+        "Aurum", "Ferrum", "Cuprum", "Stannum", "Plumbum", "Hydrargyrum", "Antimony", "Arsenic", "Borax", "Carbon",
+        "Cobalt", "Krypton", "Neon", "Xenon", "Radon", "Argon", "Helium", "Magnesium", "Titanium", "Palladium",
+        "Dunescape", "Miragemore", "Sandspire", "Silthaven", "Oasispoint", "Scorchedreach", "Heatwave", "Sunscorched", "Dustvale", "Aridhold",
+        "Drygulch", "Searingpeak", "Sandstorm", "Dunecrest", "Siroccovale", "Khamsin", "Simoom", "Ghibli", "Desertrose", "Sanddrift",
+        "Siltgate", "Mirageport", "Scorchedbay", "Aridkeep", "Heatspire", "Sunscorchedhold", "Dustreach", "Dryhaven", "Searinggate", "Sandshadow",
+        "Duneside", "Oasiscrest", "Siltreach", "Miragemore", "Sandpoint", "Dustpeak", "Aridvale", "Heatforge", "Sunscor", "Dustmantle",
+        "Sandwatch", "Duneport", "Oasisgate", "Siltwood", "Miragehold", "Scorchedpeak", "Aridspire", "Dustfall", "Sandrise", "Duneshadow",
+        "Siroccovale", "Zahar", "Kadesh", "Samarkand", "Nubia", "Sahara", "Gobi", "Mojave", "Atacama", "Sonoran",
+        "Nimbusreach", "Stratushold", "Cirrusvale", "Cumulusport", "Altostratus", "Zephyrgate", "Aetherdrift", "Cloudhaven", "Skyanchor", "Windloft",
+        "Aeropeak", "Aerishold", "Skydrift", "Cloudspire", "Stormcloud", "Nimbuscrest", "Stratoskeep", "Cirruspoint", "Cloudmantle", "Skywatch",
+        "Windreach", "Aerovale", "Cloudcrest", "Skyforge", "Windgate", "Aerisport", "Cloudvale", "Skyhaven", "Winddrift", "Aeropeak",
+        "Cloudshadow", "Skyfall", "Windspire", "Aerogrove", "Cloudpoint", "Skyspire", "Windhold", "Aeriskeep", "Cloudrise", "Skyanchor",
+        "Windloft", "Aerovale", "Cloudreach", "Skydrift", "Windcrest", "Aerisgate", "Cloudpeak", "Skyhaven", "Windward", "Aeroport",
+        "Cloudgate", "Nimbus", "Stratus", "Cirrus", "Cumulus", "Zephyr", "Aether", "Skye", "Aura", "Celesta",
+        "Abyssgate", "Chasmkeep", "Grottohold", "Cavernreach", "Deepchasm", "Abyssvale", "Chasmcrest", "Grottoport", "Cavernside", "Deepwell",
+        "Abysspoint", "Chasmwatch", "Grottopeak", "Cavernvale", "Deepforge", "Abysshold", "Chasmgate", "Grottohaven", "Cavernpoint", "Deepreach",
+        "Abysscrest", "Chasmrise", "Grottovale", "Cavernkeep", "Deepshadow", "Abyssdrift", "Chasmwood", "Grottocrest", "Caverngate", "Deepspire",
+        "Abyssport", "Chasmpeak", "Grottohold", "Cavernreach", "Deepgrove", "Abyssvale", "Chasmpoint", "Grottoway", "Cavernside", "Deepmantle",
+        "Abyssgate", "Chasmshadow", "Grottopeak", "Cavernrise", "Deepdrift", "Abysscrest", "Chasmwatch", "Grottohaven", "Cavernspire", "Deepforge",
+        "Abyssdrift", "Tartarus", "Erebus", "Hades", "Styx", "Acheron", "Lethe", "Phlegethon", "Cocytus", "Orpheus",
+        "Abyssalreach", "Trenchhold", "Reefgate", "Coralport", "Atollvale", "Oceanreach", "Seaspire", "Tidalcrest", "Wavebreak", "Deepsea",
+        "Abyssalpoint", "Trenchkeep", "Reefhaven", "Coralcrest", "Atollpeak", "Oceanspire", "Seaside", "Tidalhold", "Wavecrest", "Deepreef",
+        "Abyssalgrove", "Trenchwatch", "Reefgate", "Coralbay", "Atollpoint", "Oceancrest", "Seavale", "Tidalreach", "Wavehaven", "Deepatoll",
+        "Abyssalbay", "Trenchport", "Reefwood", "Coralrise", "Atollgate", "Oceanhold", "Seaspeak", "Tidalway", "Wavedrift", "Deepreef",
+        "Abyssalkeep", "Trenchvale", "Reefspire", "Coralpoint", "Atollreach", "Oceangate", "Seafort", "Tidalcrest", "Wavepeak", "Deeptrench",
+        "Abyssalcrest", "Poseidon", "Neptune", "Triton", "Nereus", "Oceanus", "Proteus", "Pontus", "Thalassa", "Leviathan",
+        "Bogstead", "Mirehold", "Quagmire", "Sedgevale", "Fenreach", "Marshlight", "Bogport", "Mirecrest", "Quagmireridge", "Siltpoint",
+        "Fenkeep", "Marshhaven", "Boggate", "Mirepeak", "Quagmirehold", "Sedgegrove", "Fenspire", "Marshwood", "Bogway", "Mirerise",
+        "Quagmireport", "Sedgevale", "Fencrest", "Marshgate", "Bogreach", "Mirehaven", "Quagmireridge", "Sedgepoint", "Fenkeep", "Marshlight",
+        "Bogport", "Mirecrest", "Quagmirehold", "Sedgegrove", "Fenspire", "Marshwood", "Bogway", "Mirerise", "Quagmireport", "Sedgevale",
+        "Fencrest", "Marshgate", "Bogreach", "Mirehaven", "Quagmireridge", "Sedgepoint", "Fenkeep", "Marshlight", "Bogport", "Mirecrest",
+        "Swamp", "Fen", "Bog", "Marsh", "Mire", "Slough", "Bayou", "Everglade", "Quagmire", "Sedge",
+        "Aetheria", "Quintessence", "Alchemyhold", "Brimstone", "Cinnabar", "Magisterium", "Arcanevale", "Mysticreach", "Elixirport", "Sorcererspeak",
+        "Alchemistsgrove", "Aetherdrift", "Quintessencetow", "Brimstoneridge", "Cinnabarcrest", "Magisteriumgate", "Arcanehaven", "Mysticpoint", "Elixirkeep", "Sorcerershold",
+        "Alchemistsway", "Aetheriapeak", "Quintessencevale", "Brimstoneport", "Cinnabarhold", "Magister", "Arcanum", "Mystica", "Elixira", "Sorceris",
+        "Alchemis", "Aethere", "Quintess", "Brimst", "Cinna", "Magis", "Arca", "Mysti", "Elixi", "Sorce",
+        "Alche", "Aether", "Quint", "Brim", "Cinn", "Magi", "Arca", "Myst", "Elix", "Sorc",
+        "Alch", "Enchant", "Spell", "Rune", "Glyph", "Sigil", "Wand", "Orb", "Grimoire", "Relic",
+        "Thickethold", "Bramblecrest", "Thornvale", "Briarwood", "Rootreach", "Leafhaven", "Barkspire", "Twiggate", "Branchhold", "Seedgrove",
+        "Saplingpeak", "Fernvale", "Mossykeep", "Resinport", "Timberreach", "Woodlore", "Forestedge", "Gladehaven", "Grovepoint", "Wildwood",
+        "Thicketway", "Brambleport", "Thorncrest", "Briarhold", "Rootgate", "Leafspire", "Barkreach", "Twiggrove", "Branchvale", "Seedpoint",
+        "Saplingkeep", "Ferncrest", "Mossyridge", "Resinpeak", "Timbergate", "Woodhaven", "Forestspint", "Gladepoint", "Grovehold", "Wildcrest",
+        "Thicketrise", "Brambleway", "Thornspire", "Briarreach", "Rootwood", "Leafgate", "Barkgrove", "Twigvale", "Branchpoint", "Seedreach",
+        "Saplingway", "Arbor", "Sylvan", "Dendron", "Copse", "Boscage", "Grove", "Thicket", "Wilds", "Forest",
+        "Glacierhold", "Icebergpeak", "Frostbite", "Snowcap", "Chillcrest", "Iciclevale", "Frozenreach", "Arcticgate", "Winterspire", "Coldhaven",
+        "Glacierport", "Icebergkeep", "Frostridge", "Snowdrift", "Chillpoint", "Iciclecrest", "Frozengrove", "Arcticwood", "Winterhold", "Coldspire",
+        "Glacierway", "Icebergrise", "Frostpeak", "Snowfall", "Chillvalley", "Iciclebay", "Frozenfield", "Arcticreach", "Wintergate", "Coldcrest",
+        "Glaciervale", "Icebergpoint", "Frosthaven", "Snowcapkeep", "Chillridge", "Icicleport", "Frozenwood", "Arcticpeak", "Wintercrest", "Coldgrove",
+        "Glacierpoint", "Icebergway", "Frostspire", "Snowvale", "Chillhold", "Iciclegate", "Frozenreach", "Arcticspire", "Winterdrift", "Coldwood",
+        "Glaciermore", "Boreal", "Tundra", "Permafrost", "Glacier", "Ice", "Frost", "Snow", "Chill", "Winter",
+        "Ironclad", "Steelforge", "Rockcrag", "Stonegate", "Flintkeep", "Granitehold", "Basaltreach", "Slategrove", "Quartzpoint", "Pyritepeak",
+        "Obsidianway", "Onyxcrest", "Jethold", "Coalmine", "Ironspire", "Steelhaven", "Rockport", "Stonevale", "Flintridge", "Granitecrest",
+        "Basaltkeep", "Slatehaven", "Quartzgrove", "Pyritehold", "Obsidiangate", "Onyxpoint", "Jetreach", "Coalcrest", "Ironwood", "Steelcrest",
+        "Rockhaven", "Stonepeak", "Flintway", "Granitepoint", "Basaltgrove", "Slatecrest", "Quartzhold", "Pyriteport", "Obsidianvale", "Onyxridge",
+        "Jetspire", "Coalreach", "Ironcrest", "Steelgate", "Rockspire", "Stonehold", "Flintcrest", "Graniteway", "Basaltpoint", "Slatehold",
+        "Quartzreach", "Alloy", "Forge", "Anvil", "Hammer", "Bellows", "Ingot", "Smelter", "Foundry", "Ore"
+    ],
+    citySuffixes: [
+        "hold", "keep", "fort", "bastion", "citadel", "garrison", "watch", "guard", "wall",
+        "gate", "rampart", "bulwark", "spire", "tower", "aegis", "ward", "sentry", "bastion",
+        "stronghold", "bulwark", "citadel", "fortress", "bastion", "watchtower", "rampart",
+        "peak", "summit", "crest", "ridge", "crag", "cliff", "tor", "mount", "precipice",
+        "rock", "stone", "bluff", "mesa", "plateau", "mound", "hill", "dale", "vale",
+        "gorge", "canyon", "chasm", "summit", "pinnacle", "spire", "apex", "summit",
+        "port", "haven", "bay", "wharf", "dock", "reach", "mouth", "spring", "well",
+        "basin", "estuary", "inlet", "sound", "cove", "strand", "shore", "beach",
+        "pier", "quay", "marina", "tide", "surge", "drift", "flow", "stream", "river",
+        "delta", "brook", "creek", "fount", "reservoir", "lagoon", "estuary",
+        "wood", "grove", "forest", "glade", "thicket", "bramble", "orchard", "meadow",
+        "field", "plain", "prairie", "heath", "moor", "fen", "marsh", "swamp", "bog",
+        "mire", "sedge", "brake", "copse", "bush", "hedge", "bloom", "leaf", "root",
+        "branch", "timber", "wilds", "green", "garden", "dell", "hollow",
+        "town", "village", "hamlet", "city", "metropolis", "burg", "borough", "shire",
+        "estate", "manor", "court", "hall", "chamber", "palace", "castle", "abbey",
+        "monastery", "parish", "precinct", "district", "quarter", "enclave", "settlement",
+        "municipality", "domain", "realm", "kingdom", "empire",
+        "shadow", "light", "dawn", "dusk", "night", "moon", "sun", "star", "mist",
+        "fog", "shade", "gloom", "ember", "ash", "frost", "flame", "storm", "thunder",
+        "ether", "void", "arcane", "spirit", "phantom", "spectral", "astral", "celestial"
+    ],
+
+    countryNames: [
+        // Imperial & Grand (High-fantasy empires and sovereign states)
+        "Aethelgard", "Valerion", "Aurelia", "Solstheim", "Imperia", "Regalis", "Magnus", "Arcanum", "Celestia", "Eldoria",
+        "Astrum", "Terra", "Primordia", "Veridia", "Argentum", "Aurum", "Rexland", "Sovereign", "Dominion", "Hegemony",
+        "Pantheon", "Zenith", "Apex", "Meridian", "Triumvirate", "Exarchate", "Archon", "Regent", "Monarchia", "Imperialis",
+        "Grandia", "Magnifica", "Regalium", "Gloriana", "Majestica", "Titanis", "Colossus", "Olympus", "Elysium", "Arcadia",
+        "Utopia", "Hyperion", "Atlas", "Gaia", "Mundus", "Orbis", "Regnum", "Imperium", "Aethelgardia", "Valerionis",
+
+        // Tribal & Harsh (Orcish, Dwarven, and Barbarian territories)
+        "Korg-Dun", "Zar-Khul", "Grom-Bak", "Drax-Tor", "Ur-Gorb", "Skar-Vun", "Brund-Ka", "Thrak-Mor", "Grog-Nar", "Zand-Kar",
+        "Krag-Dun", "Bor-Gath", "Drak-Tor", "Ul-Grom", "Sha-Khar", "Vun-Dar", "Kra-Zul", "Mog-Dra", "Rok-Gar", "Skar-Tan",
+        "Drax-In", "Korg-Ra", "Zar-Ma", "Grom-Li", "Brund-Ri", "Thrak-Su", "Grog-Va", "Zand-Ko", "Krag-Si", "Bor-Ta",
+        "Drak-Nu", "Ul-Ka", "Sha-Ri", "Vun-Zo", "Kra-Lu", "Mog-Na", "Rok-De", "Skar-Pi", "Drax-Jo", "Korg-Ke",
+
+        // Ethereal & Ancient (Elven, Celestial, and Magic realms)
+        "Luminara", "Aerendil", "Thalassia", "Sylvaris", "Elentari", "Galadriel", "Arwenia", "Celeborn", "Lothlorien", "Rivendell",
+        "Lindon", "Mirkwood", "Imladris", "Eregion", "Elenmor", "Aeris", "Lyra", "Selene", "Nyx", "Astra",
+        "Luna", "Solara", "Vesper", "Aurora", "Borealis", "Australis", "Zephyria", "Elysia", "Avalon", "Atlantis",
+        "Lemuria", "Mu", "Hyperborea", "Thule", "Aetheria", "Celestia", "Astrum", "Lunaria", "Solaria", "Terra-Magna",
+
+        // Dark & Shadowed (Gothic, Undead, and Sinister lands)
+        "Dreadmoor", "Nightfell", "Shadowfen", "Gloomhaven", "Mournvale", "Blightwood", "Darkwater", "Blackreach", "Umbra", "Erebus",
+        "Tartarus", "Hades", "Styx", "Acheron", "Lethe", "Phlegethon", "Cocytus", "Necropolis", "Mortis", "Thanatos",
+        "Ossuary", "Sepulcher", "Crypt", "Shadowland", "Nightland", "Darkland", "Gloomland", "Dreadland", "Blightland", "Mournland", "Blackland",
+        "Umbraland", "Erebusland", "Tartarusland", "Hadesland", "Styxland", "Acheronland", "Letheland", "Phlegethonland", "Cocytusland", "Necropolisland",
+
+        // Territorial & Descriptive (Geographic-based nations)
+        "Evergreen", "Riverlands", "Ironhold", "Stormpeak", "Sunvale", "Moonreach", "Starforge", "Frostgate", "Oakheart", "Ravenloft",
+        "Blackwater", "Deepwell", "Highgarden", "Stonekeep", "Shadowcrag", "Windhaven", "Tideport", "Amberhold", "Silverleaf", "Stormsurge",
+        "Nightfall", "Cloudreach", "Duskvale", "Brightwater", "Grimfort", "Steelgate", "Wyrmrest", "Frostpeak", "Oakvale", "Shadowgate",
+        "Ironspire", "Mooncrest", "Sunhold", "Starhaven", "Deepforge", "Mistmantle", "Goldhaven", "Silverreach", "Dragoncrest", "Stormwatch",
+        "Winterhold", "Evergreen", "Darkwater", "Lightspire", "Shadowvale", "Irongate", "Stoneport", "Windcrest", "Moonlight", "Sunspire"
+    ],
+
+    // Prefixes: Words or syllables to add to the START of a root name
+    countryNamePrefixes: [
+        "Neo-", "Grand-", "High-", "Old-", "New-", "Great-", "Under-", "Over-",
+        "Ever-", "Mid-", "Deep-", "Sky-", "Sea-", "Iron-", "Gold-", "Silver-",
+        "Shadow-", "Light-", "Frost-", "Storm-", "Dragon-", "Star-", "Moon-",
+        "Sun-", "Dark-", "Bright-", "North-", "South-", "East-", "West-", "Ethernal "
+    ],
+
+}
+
+export type TFlagColor = typeof IDatasetConst.flagColors[number]
+export type TStateSystem = typeof IDatasetConst.stateSystem[number]
+export type IResourceType = typeof IDatasetConst.resourcesClass0[number]
+    | typeof IDatasetConst.resourcesClass1[number]
+    | typeof IDatasetConst.resourcesClass2[number]
+    | typeof IDatasetConst.resourcesClass3[number]
+export type IFauna = typeof IDatasetConst.fauna[number]
+export type IFlora = typeof IDatasetConst.flora[number]
+export type ICrimeType = typeof IDatasetConst.crimeType[number]
+export type IClimateType = typeof IDatasetConst.climeteType[number]
+
+export interface ICountrySchema {
+    name: string,
+    flagColors: TFlagColor[],
+    stateSystem: TStateSystem,
+    population: number,
+    province: IProvince[],
+    area: number,
+    ruler: string
+}
+
+export interface IProvince {
+    name: string,
+    population: number,
+    area: number,
+
+    resources: IResource[],
+    cities: ICity[],
+    fauna: IFauna[],
+    flora: IFlora[],
+    crimeRates: ICrimeRate[],
+    climate: IClimateType
+}
+
+export interface IMountain {
+    name: string,
+    height: number
+}
+
+export interface ILake {
+    name: string,
+    area: number
+}
+
+export interface IResource {
+    type: string,
+    resourceClass: "basic" | "industry" | "high_tech" | 'magical',
+    productionRate: number
+}
+
+export interface ICity {
+    name: string,
+    population: number,
+    capital: boolean
+}
+
+export interface IAlliance {
+    name: string,
+    members: string[]
+}
+
+export interface ICrimeRate {
+    type: ICrimeType,
+    rate: number
+}
