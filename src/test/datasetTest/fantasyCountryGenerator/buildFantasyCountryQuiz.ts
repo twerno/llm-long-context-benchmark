@@ -2,13 +2,24 @@ import { IQuizEntry } from "../DatasetTypes";
 import { ICountrySchema } from "./datasetGenerator/FantasyCountryDatasetTypes";
 import dsUtils from "./DatasetUtils"
 
+/**
+ * Builds a quiz from the provided fantasy country dataset.
+ * 
+ * @param dataset - An array of country schemas to generate questions from.
+ * @returns An array of quiz entries containing questions and answers.
+ */
 export default function buildQuiz(dataset: ICountrySchema[]) {
     return build10SimpleQuestions(dataset);
 }
 
+/**
+ * Generates 10 simple questions based on the provided dataset.
+ * 
+ * @param dataset - An array of country schemas to generate questions from.
+ * @returns An array of quiz entries containing simple questions and answers.
+ */
 function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     const quizEnries: IQuizEntry[] = [];
-
     // 1
     let country = dsUtils.pickOne(dataset);
     quizEnries.push({
@@ -16,7 +27,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `The ruler of the ${country.name} is ${country.ruler}.`,
         rawData: country.ruler
     })
-
     // 2
     country = dsUtils.pickOne(dataset);
     quizEnries.push({
@@ -24,7 +34,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `The colors of the ${country.name} are ${country.flagColors.join(", ")}.`,
         rawData: country.flagColors
     })
-
     // 3
     country = dsUtils.pickOne(dataset);
     quizEnries.push({
@@ -32,7 +41,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `The state system of the ${country.name} is ${country.stateSystem}.`,
         rawData: country.stateSystem
     })
-
     // 4
     country = dsUtils.pickOne(dataset);
     quizEnries.push({
@@ -40,7 +48,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `There are ${country.province.length} in the ${country.name}.`,
         rawData: `${country.province.length}`
     })
-
     // 5
     country = dsUtils.pickOne(dataset);
     let province = dsUtils.pickOne(country.province);
@@ -49,7 +56,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `The province ${province.name} is located in ${country.name}.`,
         rawData: country.name
     })
-
     // 6
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
@@ -58,7 +64,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `The province ${province.name} of ${country.name} produces ${province.resources.map(p => p.type).join(", ")}.`,
         rawData: province.resources.map(p => p.type)
     })
-
     // 7
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
@@ -67,7 +72,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `The cities of ${province.name} are ${province.cities.map(c => c.name).join(", ")}.`,
         rawData: province.cities.map(c => c.name)
     })
-
     // 8
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
@@ -78,7 +82,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: province.fauna.includes(fauna) ? `Yes, it does.` : `No, it doesn't.`,
         rawData: province.fauna.includes(fauna)
     })
-
     // 9
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
@@ -89,7 +92,6 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: province.flora.includes(flora) ? `Yes, it does.` : `No, it doesn't.`,
         rawData: province.flora.includes(flora)
     })
-
     // 10
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
@@ -98,14 +100,17 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
         answer: `The area of the ${province.name} is ${province.area} square kilometers.`,
         rawData: `${province.area}`
     })
-
     return quizEnries;
 }
 
+/**
+ * Placeholder for building complex questions.
+ */
 function buildComplexQuestion() {
-
 }
 
+/**
+ * Placeholder for building tricky questions.
+ */
 function buildTrickyQuestion() {
-
 }
