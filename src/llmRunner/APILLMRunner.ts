@@ -61,15 +61,11 @@ export class OpenApiApiRunner implements ILLMRunner {
 
     public async run(props: ILLMRunnerProps): Promise<ILLMRunnerOutput> {
 
-        const { prompt } = props;
+        const { messages } = props;
 
         const request: ChatCompletionRequestSchema = {
             ...this.props,
-
-            messages: prompt.map((text) => ({
-                role: 'user',
-                content: text
-            }))
+            messages
         }
 
         try {

@@ -10,14 +10,14 @@ export default {
         return this.randomInt(1, max)
     },
 
-    pickOne(arr: string[]) {
+    pickOne<T>(arr: T[]) {
         return this
-            .pickSome({ min: 1, max: 1 })
+            .pickSome<T>({ min: 1, max: 1 })
             .from(arr)[0];
     },
 
-    pickSome({ min, max }: { min: number, max: number }) {
-        const from = (arr: string[]) => {
+    pickSome<T>({ min, max }: { min: number, max: number }) {
+        const from = <T>(arr: T[]) => {
             const _max = Math.min(max, arr.length);
             const length = this.randomInt(min, _max);
 

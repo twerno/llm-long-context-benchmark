@@ -1,5 +1,8 @@
 export interface ILLMRunnerProps {
-    prompt: string[]
+    messages: {
+        role: "user" | "system" | "assistant";
+        content: string;
+    }[]
 }
 
 export interface ILLMRunnerOutput {
