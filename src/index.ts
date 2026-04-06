@@ -4,9 +4,8 @@ import HiddenTextTest from "./test/HiddenPhraseTest";
 import SequenceOfNumbersTest from "./test/SequenceOfNumbersTest"
 import { ILLMRunnerProps } from "./llmRunner/ILLMRunner";
 import path from "node:path";
-import FantasyCountryDatasetGenerator from "./test/datasetTest/fantasyCountryGenerator/datasetGenerator/FantasyCountryDatasetGenerator";
-import convertFantasyCountryDataset2Prompt from './test/datasetTest/fantasyCountryGenerator/convertFantasyCountryDataset2Prompt'
-import buildFantasyCountryQuiz from './test/datasetTest/fantasyCountryGenerator/buildFantasyCountryQuiz'
+import QuizDataUtils from "./test/datasetTest/QuizDataUtils";
+import { IQuizEntry } from "./test/datasetTest/DatasetTypes";
 
 
 async function test() {
@@ -44,34 +43,28 @@ async function testHiddenText() {
 }
 
 async function generateCountries() {
-  const fantasyCountryGenerator = new FantasyCountryDatasetGenerator();
-  const dataset = await Promise.all(
-    [
-      fantasyCountryGenerator.generateCountry(),
-    ]
-  );
-  const dateTimeStamp = new Date().toISOString().replace(/:/g, "_")
-
-  const dirPath = path.join("tmp", dateTimeStamp);
-  if (!existsSync(dirPath)) {
-    mkdirSync(dirPath, { recursive: true });
-  }
-
-  writeFileSync(path.join(dirPath, `dataset.json`), JSON.stringify(dataset, null, 2))
-  convertFantasyCountryDataset2Prompt
-  const prompt = dataset.map(convertFantasyCountryDataset2Prompt).join("\n\n")
-  writeFileSync(path.join(dirPath, `prompt.md`), prompt)
-  const quizEntries = buildFantasyCountryQuiz(dataset);
+  const quizData = await QuizDataUtils.buildQuizData(
+    {
+      amountOfCountriesInDS: 2,
+      quizId: new Date().toISOString().replace(/:/g, "_"),
+      setsOfQuestions: 2
+    }
+  )
 
   // send questions
-  const messages: ILLMRunnerProps["messages"] = [{ role: "user", content: prompt }]
-  const responsesToEvaluate: { content: string, testQAndA: typeof quizEntries[number] }[] = []
-  for (const testQAndA of quizEntries) {
-    messages.push({ "role": "user", content: testQAndA.question })
+  const messages: ILLMRunnerProps["messages"] = [{ role: "user", content: quizData.datasetPrompt }]
+  const responsesToEvaluate: { content: string, quizEntry: IQuizEntry }[] = []
+  for (const quizEntry of quizData.quizEntries) {
+    messages.push({ "role": "user", content: quizEntry.question })
     let resp = await LMStudioApiRunner.run({ messages })
     const content = resp.output[0]
     messages.push({ role: "assistant", content })
-    responsesToEvaluate.push({ testQAndA, content })
+    responsesToEvaluate.push({ quizEntry, content })
+  }
+
+  const dirPath = path.join("quiz_results", quizData.quizId);
+  if (!existsSync(dirPath)) {
+    mkdirSync(dirPath, { recursive: true });
   }
   writeFileSync(path.join(dirPath, `messages.txt`), JSON.stringify(messages, null, 2))
 
@@ -80,7 +73,7 @@ async function generateCountries() {
   let unknown = 0;
   let i = 1;
   for (const respToEvaluate of responsesToEvaluate) {
-    const message = `The correct answer to the question should be "${respToEvaluate.testQAndA.answer}". 
+    const message = `The correct answer to the question should be "${respToEvaluate.quizEntry.answer}". 
     Check if the answer below is correct and respond with "TRUE" when it is or "FALSE" otherwise.\n
     The given answer is: "${respToEvaluate.content}"`
     let resp = await LMStudioApiRunner.run({ messages: [{ role: "user", content: message }] })
