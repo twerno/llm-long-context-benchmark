@@ -1,9 +1,8 @@
-
-export const IDatasetConst = {
+export default {
     flagColors: [
         "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink", "Brown", "Black", "White", "Cyan", "Magenta", "Lime", "Teal",
     ],
-    stateSystem: ["Autocracy", "Monarchy", "Oligarchy", "Theocracy", "Democracy", "Technocracy", "Plutocracy", "Meritocracy"],
+    stateSystems: ["Autocracy", "Monarchy", "Oligarchy", "Theocracy", "Democracy", "Technocracy", "Plutocracy", "Meritocracy"],
     // Class 0: Basic/Biological - High volume, low value
     resourcesClass0: [
         "Wheat", "Barley", "Rye", "Corn", "Rice", "Oats", "Potatoes", "Carrots",
@@ -32,7 +31,7 @@ export const IDatasetConst = {
         "Necrotic Dust", "Arcane Residue", "Enchanted Sap", "Wyrmbone", "Runestone",
         "Feywild Petals", "Kraken Ink", "Basilisk Venom", "Magefire Ember", "Void Matter"
     ],
-    fauna: [
+    faunaList: [
         "Pyros", "Aquashell", "Leafleap", "Voltwing", "Shadowprowl", "Frostbite", "Blazewing", "Dewdrop", "Vinewhip", "Sparktail", "Emberclaw",
         "Glaciermane", "Mossyback", "Thunderpaw", "Gloommane", "Scorchtail", "Torrential", "Petalburst", "Electromane", "Nightshade", "Magmabite",
         "Rippletail", "Thornspike", "Boltstrike", "Phantomfin", "Flarefin", "Icicleclaw", "Rootbound", "Zappity", "Wraithwing", "Burnis", "Mistwing",
@@ -52,7 +51,7 @@ export const IDatasetConst = {
         "Poisondash", "Flyspark", "Emberlight", "Aquadusk", "Terradawn", "Aerobright", "Spiritglow", "Darkshine", "Steeldrift", "Fairyburst", "Dragonwave",
         "Rockshade", "Groundflare", "Bugsurge", "Poisonglow", "Flydance", "Emberstrike", "Aquaflash", "Terracrunch", "Aeroflare", "Spiritbound"
     ],
-    flora: [
+    floraList: [
         "Aetherbloom", "Shadowpetal", "Glowroot", "Frostfern", "Pyreleaf", "Duskvine", "Dawnblossom", "Mistmoss", "Stormspore", "Emberseed", "Lunarlily",
         "Solarrose", "Voidvine", "Terrathorn", "Aquapetal", "Aeroleaf", "Hydrostem", "Floraflame", "Biobud", "Cyberclover", "Magmamoss", "Glacialgrain",
         "Spiritsprout", "Darkdew", "Lightleaf", "Ironroot", "Steelstem", "Goldpetal", "Silverseed", "Bronzebranch", "Copperclover", "Zinczinnia",
@@ -79,12 +78,12 @@ export const IDatasetConst = {
         "Vineeternal", "Sporeinfinite", "Mosseverlasting", "Ferntimeless", "Bloomcelestial", "Thorninfernal", "Seedterrestrial", "Budelemental",
         "Stemmonumental", "Petalgraceful", "Leafelegant", "Rootpowerful", "Vinesupple"
     ],
-    crimeType: ["theft", "burglary", "robbery", "assault", "homicide", "fraud", "drug-related crime", "cybercrime", "vandalism", "domestic violence"],
-    climeteType: [
+    crimeTypes: ["theft", "burglary", "robbery", "assault", "homicide", "fraud", "drug-related crime", "cybercrime", "vandalism", "domestic violence"],
+    climeteTypes: [
         "Pyroclasic", "Glacial", "Aetheric", "Void-vacuum", "Magmatic", "Cryogenic", "Solar-scorched", "Umbral", "Tempestuous", "Hydro-mist",
         "Arid-cinder", "Celestial", "Abyssal", "Verdant-tropical", "Permafrost", "Mana-saturated", "Chrono-flux", "Nebulous", "Tidal", "Plasma-heat"
     ],
-    names: [
+    personNames: [
         "Korg", "Grak", "Bram", "Drun", "Krag", "Bor", "Grond", "Thrum", "Brak", "Grom",
         "Krell", "Durn", "Karg", "Skarn", "Zorn", "Blud", "Grol", "Kragur", "Drunm", "Brakar",
         "Grut", "Korm", "Darg", "Thror", "Brunt", "Algrim", "Balthor", "Delgrim", "Magni", "Thorgrim",
@@ -136,7 +135,7 @@ export const IDatasetConst = {
         "Xanathir", "Xandril", "Xanthia", "Xanthe", "Xanthos", "Xarion", "Xaviera", "Xenon", "Xerxes", "Xylia",
         "Ylva", "Yndra", "Ynora", "Yrlis", "Ysabel", "Yselle", "Yvaine", "Yvandra", "Yvren", "Ywyn"
     ],
-    nameSuffixes: [
+    PersonNameSuffixes: [
         // Heroic & Noble
         "the Great", "the Brave", "the Just", "the Valiant", "the Mighty", "the Strong", "the Swift", "the Wise", "the Gracious", "the Benevolent",
         "the Unbroken", "the Eternal", "the Ancient", "the True", "the Pure", "the Holy", "the Sacred", "the Divine", "the Renowned", "the Legendary",
@@ -390,70 +389,4 @@ export const IDatasetConst = {
         "Sun-", "Dark-", "Bright-", "North-", "South-", "East-", "West-", "Ethernal "
     ],
 
-}
-
-export type TFlagColor = typeof IDatasetConst.flagColors[number]
-export type TStateSystem = typeof IDatasetConst.stateSystem[number]
-export type IResourceType = typeof IDatasetConst.resourcesClass0[number]
-    | typeof IDatasetConst.resourcesClass1[number]
-    | typeof IDatasetConst.resourcesClass2[number]
-    | typeof IDatasetConst.resourcesClass3[number]
-export type IFauna = typeof IDatasetConst.fauna[number]
-export type IFlora = typeof IDatasetConst.flora[number]
-export type ICrimeType = typeof IDatasetConst.crimeType[number]
-export type IClimateType = typeof IDatasetConst.climeteType[number]
-
-export interface ICountrySchema {
-    name: string,
-    flagColors: TFlagColor[],
-    stateSystem: TStateSystem,
-    population: number,
-    province: IProvince[],
-    area: number,
-    ruler: string
-}
-
-export interface IProvince {
-    name: string,
-    population: number,
-    area: number,
-
-    resources: IResource[],
-    cities: ICity[],
-    fauna: IFauna[],
-    flora: IFlora[],
-    crimeRates: ICrimeRate[],
-    climate: IClimateType
-}
-
-export interface IMountain {
-    name: string,
-    height: number
-}
-
-export interface ILake {
-    name: string,
-    area: number
-}
-
-export interface IResource {
-    type: string,
-    resourceClass: "basic" | "industry" | "high_tech" | 'magical',
-    productionRate: number
-}
-
-export interface ICity {
-    name: string,
-    population: number,
-    capital: boolean
-}
-
-export interface IAlliance {
-    name: string,
-    members: string[]
-}
-
-export interface ICrimeRate {
-    type: ICrimeType,
-    rate: number
 }

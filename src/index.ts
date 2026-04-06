@@ -1,12 +1,13 @@
 import { existsSync, mkdirSync, writeFileSync, } from "node:fs";
 import { LMStudioApiRunner } from "./llmRunner/APILLMRunner";
-import { generateCountry } from "./test/datasetTest/datasetBuilder/DatasetGenerator";
 import HiddenTextTest from "./test/HiddenPhraseTest";
 import SequenceOfNumbersTest from "./test/SequenceOfNumbersTest"
-import { convertToPrompt } from "./test/datasetTest/datasetBuilder/Dataset2PromptConverter";
-import { buildQuestions as buildTestQuestionsAndAnswers } from "./test/datasetTest/datasetBuilder/QuestionsBuilder";
 import { ILLMRunnerProps } from "./llmRunner/ILLMRunner";
 import path from "node:path";
+import FantasyCountryDatasetGenerator from "./test/datasetTest/fantasyCountryGenerator/datasetGenerator/FantasyCountryDatasetGenerator";
+import convertFantasyCountryDataset2Prompt from './test/datasetTest/fantasyCountryGenerator/convertFantasyCountryDataset2Prompt'
+import buildFantasyCountryQuiz from './test/datasetTest/fantasyCountryGenerator/buildFantasyCountryQuiz'
+
 
 async function test() {
 
@@ -43,9 +44,10 @@ async function testHiddenText() {
 }
 
 async function generateCountries() {
+  const fantasyCountryGenerator = new FantasyCountryDatasetGenerator();
   const dataset = await Promise.all(
     [
-      generateCountry(),
+      fantasyCountryGenerator.generateCountry(),
     ]
   );
   const dateTimeStamp = new Date().toISOString().replace(/:/g, "_")
@@ -56,14 +58,15 @@ async function generateCountries() {
   }
 
   writeFileSync(path.join(dirPath, `dataset.json`), JSON.stringify(dataset, null, 2))
-  const prompt = dataset.map(convertToPrompt).join("\n\n")
+  convertFantasyCountryDataset2Prompt
+  const prompt = dataset.map(convertFantasyCountryDataset2Prompt).join("\n\n")
   writeFileSync(path.join(dirPath, `prompt.md`), prompt)
-  const testQAndAList = buildTestQuestionsAndAnswers(dataset);
+  const quizEntries = buildFantasyCountryQuiz(dataset);
 
   // send questions
   const messages: ILLMRunnerProps["messages"] = [{ role: "user", content: prompt }]
-  const responsesToEvaluate: { content: string, testQAndA: typeof testQAndAList[number] }[] = []
-  for (const testQAndA of testQAndAList) {
+  const responsesToEvaluate: { content: string, testQAndA: typeof quizEntries[number] }[] = []
+  for (const testQAndA of quizEntries) {
     messages.push({ "role": "user", content: testQAndA.question })
     let resp = await LMStudioApiRunner.run({ messages })
     const content = resp.output[0]
@@ -78,7 +81,7 @@ async function generateCountries() {
   let i = 1;
   for (const respToEvaluate of responsesToEvaluate) {
     const message = `The correct answer to the question should be "${respToEvaluate.testQAndA.answer}". 
-    Check if the answer below is correct one and respond with "TRUE" iwhen it is or "FALSE" otherwise.\n
+    Check if the answer below is correct and respond with "TRUE" when it is or "FALSE" otherwise.\n
     The given answer is: "${respToEvaluate.content}"`
     let resp = await LMStudioApiRunner.run({ messages: [{ role: "user", content: message }] })
     writeFileSync(path.join(dirPath, `${i++}.txt`), message + "\n\n ================================= \n" + resp.output[0])

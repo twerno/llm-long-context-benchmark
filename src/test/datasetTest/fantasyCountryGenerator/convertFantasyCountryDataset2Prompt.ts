@@ -1,6 +1,8 @@
-import { ICountrySchema, IProvince } from "./DatasetGeneratorTypes";
+import type { ICountrySchema, IProvince } from "./datasetGenerator/FantasyCountryDatasetTypes";
 
-export function convertToPrompt(country: ICountrySchema): string {
+
+
+export default function convertFantasyCountryDataset2Prompt(country: ICountrySchema): string {
     const result = [
         `# The country name is **"${country.name}"**.`,
         `It's state system is a ${country.stateSystem} and is ruled by ${country.ruler}.`,
@@ -10,6 +12,7 @@ export function convertToPrompt(country: ICountrySchema): string {
     ];
     return result.join("\n");
 }
+
 
 function provincePrompt(province: IProvince): string {
     const result: string[] = [
@@ -24,7 +27,7 @@ function provincePrompt(province: IProvince): string {
         { className: "magical", label: "magical components", unit: "kilograms" }
     ];
 
-    for (const { className, label, unit }of resourceClasses) {
+    for (const { className, label, unit } of resourceClasses) {
         const resources = province.resources.filter(v => v.resourceClass === className);
         if (resources.length > 0) {
             const resString = resources.map(v => `${v.type} - ${v.productionRate} ${unit}`).join(", ");
