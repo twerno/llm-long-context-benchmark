@@ -1,85 +1,60 @@
-import { existsSync, mkdirSync, writeFileSync, } from "node:fs";
+import path from "node:path";
 import { LMStudioApiRunner } from "./llmRunner/APILLMRunner";
 import HiddenTextTest from "./test/HiddenPhraseTest";
-import SequenceOfNumbersTest from "./test/SequenceOfNumbersTest"
-import { ILLMRunnerProps } from "./llmRunner/ILLMRunner";
-import path from "node:path";
-import QuizDataUtils from "./test/datasetTest/QuizDataUtils";
-import { IQuizEntry } from "./test/datasetTest/DatasetTypes";
+import SequenceOfNumbersTest from "./test/SequenceOfNumbersTest";
+import DatasetQuizTest from "./test/datasetTest/DatasetQuizTest";
 
 
 async function test() {
 
-  // let resp = await LMStudioApiRunner.run({ prompt: ["Poland is the capital city of which country?"] })
-  // console.log(resp);
+    // let resp = await LMStudioApiRunner.run({ prompt: ["Poland is the capital city of which country?"] })
+    // console.log(resp);
 
-  // let resp = await LMStudioApiRunner.run({ prompt: ["Imagine 600 names of fictional pokemon like creatures, answer with the coma separated list of names. Be creative."] })
-  // console.log(resp);
-  // await testHiddenText();
+    // let resp = await LMStudioApiRunner.run({ prompt: ["Imagine 600 names of fictional pokemon like creatures, answer with the coma separated list of names. Be creative."] })
+    // console.log(resp);
+    // await testHiddenText();
 
-  await generateCountries();
+    await testSequenceOfNumbers();
+    // await testHiddenText();
+    // await datasetQuizTest();
 }
 
 test()
 
 async function testSequenceOfNumbers() {
-  const testPrompt = await SequenceOfNumbersTest.buildPrompt({ sequenceLength: 1820, noOfGaps: 2 })
-  // console.log(testPrompt.prompt)
-  let resp = await LMStudioApiRunner.run({ messages: [{ role: 'user', content: testPrompt.prompt }] })
-  const evaluate = await SequenceOfNumbersTest.evaluate(resp.output, testPrompt.data)
-  // console.log(testPrompt.data.missingNumbers)
-  console.log(resp)
-  console.log(`Result: correct [${evaluate.correct}/${evaluate.total}] false possitive: ${evaluate.falsePossitive}`)
+    const testPrompt = await SequenceOfNumbersTest.buildPrompt({ sequenceLength: 1820, noOfGaps: 2 })
+    // console.log(testPrompt.prompt)
+    let resp = await LMStudioApiRunner.run({ messages: [{ role: 'user', content: testPrompt.prompt }] })
+    const evaluate = await SequenceOfNumbersTest.evaluate(resp.output, testPrompt.data)
+    console.log(`missing numbers: [${testPrompt.data.missingNumbers.join(", ")}]`)
+    console.log(resp)
+    console.log(`Result: correct [${evaluate.correct}/${evaluate.total}] false possitive: ${evaluate.falsePossitive}`)
 }
 
 async function testHiddenText() {
-  const testPrompt = await HiddenTextTest.buildPrompt({ textLength: 100000, noOfHiddenPhrases: 200 })
-  console.log(testPrompt.prompt)
-  let resp = await LMStudioApiRunner.run({ messages: [{ role: 'user', content: testPrompt.prompt }] })
-  const evaluate = await HiddenTextTest.evaluate(resp.output, testPrompt.data)
-  console.log(testPrompt.data.hiddenPhrases)
-  console.log(resp)
-  console.log(`Result: correct [${evaluate.correct}/${evaluate.total}] false possitive: ${evaluate.falsePossitive}`)
+    const testPrompt = await HiddenTextTest.buildPrompt({ textLength: 100000, noOfHiddenPhrases: 200 })
+    // console.log(testPrompt.prompt)
+    let resp = await LMStudioApiRunner.run({ messages: [{ role: 'user', content: testPrompt.prompt }] })
+    const evaluate = await HiddenTextTest.evaluate(resp.output, testPrompt.data)
+    console.log(testPrompt.data.hiddenPhrases)
+    console.log(resp)
+    console.log(`Result: correct [${evaluate.correct}/${evaluate.total}] false possitive: ${evaluate.falsePossitive}`)
 }
 
-async function generateCountries() {
-  const quizData = await QuizDataUtils.buildQuizData(
-    {
-      amountOfCountriesInDS: 2,
-      quizId: new Date().toISOString().replace(/:/g, "_"),
-      setsOfQuestions: 2
-    }
-  )
+async function datasetQuizTest() {
+    const quizData = await DatasetQuizTest
+        .getQuizData({ datasetSize: 2, setsOfQuestions: 1 })
 
-  // send questions
-  const messages: ILLMRunnerProps["messages"] = [{ role: "user", content: quizData.datasetPrompt }]
-  const responsesToEvaluate: { content: string, quizEntry: IQuizEntry }[] = []
-  for (const quizEntry of quizData.quizEntries) {
-    messages.push({ "role": "user", content: quizEntry.question })
-    let resp = await LMStudioApiRunner.run({ messages })
-    const content = resp.output[0]
-    messages.push({ role: "assistant", content })
-    responsesToEvaluate.push({ quizEntry, content })
-  }
+    const runId = new Date().toISOString().replace(/:/g, "_");
+    const dirPath = path.join("tmp", "quiz", quizData.quizId, "results", runId);
+    const responsesToEvaluate = await DatasetQuizTest.execute({ runId, quizData, llmRunner: LMStudioApiRunner, dirPath })
 
-  const dirPath = path.join("quiz_results", quizData.quizId);
-  if (!existsSync(dirPath)) {
-    mkdirSync(dirPath, { recursive: true });
-  }
-  writeFileSync(path.join(dirPath, `messages.txt`), JSON.stringify(messages, null, 2))
+    const evaluationResult = await DatasetQuizTest.evaluate({
+        metadata: { runId, quizId: quizData.quizId, dirPath },
+        repeatEvaluationNTimes: 2,
+        llmRunner: LMStudioApiRunner,
+        responsesToEvaluate,
+    })
 
-  // evaluate
-  let correct = 0;
-  let unknown = 0;
-  let i = 1;
-  for (const respToEvaluate of responsesToEvaluate) {
-    const message = `The correct answer to the question should be "${respToEvaluate.quizEntry.answer}". 
-    Check if the answer below is correct and respond with "TRUE" when it is or "FALSE" otherwise.\n
-    The given answer is: "${respToEvaluate.content}"`
-    let resp = await LMStudioApiRunner.run({ messages: [{ role: "user", content: message }] })
-    writeFileSync(path.join(dirPath, `${i++}.txt`), message + "\n\n ================================= \n" + resp.output[0])
-    if (resp.output[0].includes("TRUE")) correct++;
-  }
-
-  console.log(`[${correct}/${responsesToEvaluate.length}]`)
+    console.log(`[${evaluationResult.correct}/${responsesToEvaluate.length}]`)
 } 

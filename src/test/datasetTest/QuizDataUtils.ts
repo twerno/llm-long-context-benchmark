@@ -13,7 +13,7 @@ interface IBuildQuizProps {
     quizId: string
 }
 
-interface IQuizData {
+export interface IQuizData {
     quizId: string,
     dataset: ICountrySchema[],
     datasetPrompt: string,
@@ -27,11 +27,13 @@ export default {
 }
 
 async function buildQuizData(props: IBuildQuizProps): Promise<IQuizData> {
+    console.log(`[Quiz="${props.quizId}"] data generation start.`)
+
     const fantasyCountryGenerator = new FantasyCountryDatasetGenerator();
 
     const dataset = await Promise.all(
         Array.from({ length: props.amountOfCountriesInDS })
-            .map(fantasyCountryGenerator.generateCountry)
+            .map(() => fantasyCountryGenerator.generateCountry())
     )
 
     const datasetPrompt = dataset.map(convertFantasyCountryDataset2Prompt)
@@ -48,24 +50,26 @@ async function buildQuizData(props: IBuildQuizProps): Promise<IQuizData> {
         quizEntries
     }
 
+    console.log(`[Quiz="${props.quizId}"] data generated.`)
     saveQuiz(quizData)
+    console.log(`[Quiz="${props.quizId}"] data saved.`)
 
     return quizData;
 }
 
-function saveQuiz(quiz: IQuizData) {
-    const dirPath = path.join("quizes", quiz.quizId);
+function saveQuiz(data: IQuizData) {
+    const dirPath = path.join("tmp", "quiz", data.quizId, "data");
     if (!existsSync(dirPath)) {
         mkdirSync(dirPath, { recursive: true });
     }
 
-    writeFileSync(path.join(dirPath, `dataset.json`), JSON.stringify(quiz.dataset, null, 2))
-    writeFileSync(path.join(dirPath, `dataset_prompt.md`), quiz.datasetPrompt)
-    writeFileSync(path.join(dirPath, `quiz.json`), JSON.stringify(quiz.quizEntries, null, 2))
+    writeFileSync(path.join(dirPath, `dataset.json`), JSON.stringify(data.dataset, null, 2))
+    writeFileSync(path.join(dirPath, `dataset_prompt.md`), data.datasetPrompt)
+    writeFileSync(path.join(dirPath, `quiz.json`), JSON.stringify(data.quizEntries, null, 2))
 }
 
 function loadQuiz(quizId: string): IQuizData | null {
-    const dirPath = path.join("quizes", quizId);
+    const dirPath = path.join("tmp", "quiz", quizId, "data");
     if (!existsSync(dirPath)) {
         return null;
     }

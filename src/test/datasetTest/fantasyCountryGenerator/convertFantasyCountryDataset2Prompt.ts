@@ -1,4 +1,9 @@
 import type { ICountrySchema, IProvince } from "./datasetGenerator/FantasyCountryDatasetTypes";
+import DatasetUtils from "./DatasetUtils";
+
+
+// alias
+const joinList = DatasetUtils.joinList;
 
 
 /**
@@ -11,8 +16,8 @@ export default function convertFantasyCountryDataset2Prompt(country: ICountrySch
     const result = [
         `# The country name is **"${country.name}"**.`,
         `It's state system is a ${country.stateSystem} and is ruled by ${country.ruler}.`,
-        `The flag of "${country.name}" has ${country.flagColors.length} colors: ${country.flagColors.join(", ")}.`,
-        `It's area is divided into ${country.province.length} provinces: ${country.province.map(p => p.name).join(", ")}.`,
+        `The flag of "${country.name}" has ${country.flagColors.length} colors: ${joinList(country.flagColors)}.`,
+        `It's area is divided into ${country.province.length} provinces: ${joinList(country.province.map(p => p.name))}.`,
         country.province.map(provincePrompt).join("\n")
     ];
     return result.join("\n");
@@ -29,31 +34,33 @@ function provincePrompt(province: IProvince): string {
         `## The province of ${province.name}`,
         `is inhabited by ${province.population} and covers an area of ${province.area} square kilometers.${province.cities.length > 0 ? ` Its capital city is ${province.cities[0].name}.` : ""}`,
     ];
-    const resourceClasses: { className: "basic" | "industry" | "high_tech" | "magical"; label: string; unit: string }[] = [
-        { className: "basic", label: "basic resources", unit: "tons" },
-        { className: "industry", label: "industry resources", unit: "tons" },
-        { className: "high_tech", label: "high tech materials", unit: "tons" },
-        { className: "magical", label: "magical components", unit: "kilograms" }
+
+    const resourceClasses: { className: "basic" | "industry" | "high_tech" | "magical"; label: string }[] = [
+        { className: "basic", label: "basic resources", },
+        { className: "industry", label: "industry resources", },
+        { className: "high_tech", label: "high tech materials" },
+        { className: "magical", label: "magical components", }
     ];
-    for (const { className, label, unit } of resourceClasses) {
+    for (const { className, label } of resourceClasses) {
         const resources = province.resources.filter(v => v.resourceClass === className);
         if (resources.length > 0) {
-            const resString = resources.map(v => `${v.type} - ${v.productionRate} ${unit}`).join(", ");
+            const resString = joinList(resources.map(v => `${v.type} - ${v.productionRate} ${v.unit}`));
             result.push(`It produces ${label} like: ${resString}.`);
         }
     }
 
-    result.push(`The most important representatives of fauna are ${province.fauna.join(", ")}, and flora ${province.flora.join(", ")}.`);
+    result.push(`The most important representatives of fauna are ${joinList(province.fauna)}, and flora ${joinList(province.flora)}.`);
     result.push(`All of the representatives of fauna and flora are well suited to survive in a ${province.climate} climate.`);
     if (province.crimeRates.length > 0) {
-        const crimeString = province.crimeRates.map(c => `${c.type} - ${c.rate} cases`).join(", ");
+        const crimeString = joinList(province.crimeRates.map(c => `${c.type} - ${c.rate} cases`));
         result.push(`The province of ${province.name} also has its darker side, the crime rates per 1000 citizens are as follows: ${crimeString}.`);
     }
 
     if (province.cities.length > 0) {
-        const citiesString = province.cities.map(c => `${c.name} with population of ${c.population}`).join(", ");
+        const citiesString = joinList(province.cities.map(c => c.name));
         result.push(`There are ${province.cities.length} main cities in that province: ${citiesString}.`);
     }
 
     return result.join("\n");
 }
+

@@ -8,6 +8,7 @@ export interface ICountrySchema {
     population: number,
     province: IProvince[],
     area: number,
+    density: number,
     ruler: string
 }
 
@@ -18,6 +19,7 @@ export interface IProvince {
     name: string,
     population: number,
     area: number,
+    density: number,
     resources: IResource[],
     cities: ICity[],
     fauna: string[],
@@ -32,7 +34,9 @@ export interface IProvince {
 export interface IResource {
     type: string,
     resourceClass: "basic" | "industry" | "high_tech" | 'magical',
-    productionRate: number
+    unit: "tons" | "kilograms",
+    productionRate: number,
+    normalisedProductionInKg: number
 }
 
 /**
@@ -40,7 +44,6 @@ export interface IResource {
  */
 export interface ICity {
     name: string,
-    population: number,
     capital: boolean
 }
 

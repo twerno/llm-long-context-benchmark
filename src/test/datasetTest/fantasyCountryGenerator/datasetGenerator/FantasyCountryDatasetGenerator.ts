@@ -9,10 +9,11 @@ export default class FantasyCountryDatasetGenerator {
 
     public async generateCountry(): Promise<ICountrySchema> {
         const provinces = dsUtils.buildSome({ min: 4, max: 4 })
-            .builder(this.generateProvince)
+            .builder(() => this.generateProvince())
 
         const population = provinces.map(r => r.population).reduce((prev, curr) => prev + curr, 0)
         const area = provinces.map(r => r.area).reduce((prev, curr) => prev + curr, 0)
+        const density = Math.round(population / area * 100) / 100;
 
         return {
             name: this.rb.generateUniqueCountryName(),
@@ -21,20 +22,26 @@ export default class FantasyCountryDatasetGenerator {
             stateSystem: dsUtils.pickOne(datasetConsts.stateSystems),
             province: provinces,
             area,
+            density,
             ruler: this.rb.generateUniquePersonName()
         }
     }
 
 
     private generateProvince(): IProvince {
+        const population = dsUtils.randomFrom1(100000);
+        const area = dsUtils.randomFrom1(100000);
+        const density = Math.round(population / area * 100) / 100;
+
         return {
             name: this.rb.generateUniqueProvinceName(),
-            population: dsUtils.randomFrom1(100000),
-            area: dsUtils.randomFrom1(100000),
-            cities: dsUtils.buildSome({ min: 1, max: 5 }).builder(this.generateCity),
+            population,
+            area,
+            density,
+            cities: dsUtils.buildSome({ min: 2, max: 5 }).builder(idx => this.generateCity(idx)),
             climate: dsUtils.pickOne(datasetConsts.climeteTypes),
-            fauna: dsUtils.pickSome({ min: 1, max: 10 }).from(datasetConsts.faunaList),
-            flora: dsUtils.pickSome({ min: 1, max: 10 }).from(datasetConsts.floraList),
+            fauna: dsUtils.pickSome({ min: 2, max: 10 }).from(datasetConsts.faunaList),
+            flora: dsUtils.pickSome({ min: 2, max: 10 }).from(datasetConsts.floraList),
             resources: generateResourceProduction(),
             crimeRates: generateCrimeRates()
         }
@@ -43,7 +50,6 @@ export default class FantasyCountryDatasetGenerator {
 
     private generateCity(idx: number): ICity {
         return {
-            population: dsUtils.randomFrom1(10000),
             capital: idx === 0,
             name: this.rb.generateUniqueCityName()
         }
@@ -51,39 +57,49 @@ export default class FantasyCountryDatasetGenerator {
 }
 
 function generateResourceProduction() {
+    const buildResource = (props: Pick<IResource, "type" | "resourceClass" | "unit">, rateLimit: number): IResource => {
+        const productionRate = dsUtils.randomFrom1(rateLimit)
+        const normalisedProductionInKg = productionRate * (props.type === "ton" ? 1000 : 1)
+        return {
+            ...props,
+            productionRate,
+            normalisedProductionInKg
+        }
+    }
+
     return [
 
-        ...dsUtils.pickSome({ min: 2, max: 5 })
+        ...dsUtils.pickSome({ min: 2, max: 3 })
             .from(datasetConsts.resourcesClass0)
-            .map<IResource>(type => ({
+            .map<IResource>(type => buildResource({
                 type,
                 resourceClass: "basic",
-                productionRate: dsUtils.randomFrom1(1000)
-            })),
+                unit: "tons",
+            }, 1000)),
 
-        ...dsUtils.pickSome({ min: 1, max: 3 })
-            .from(datasetConsts.resourcesClass1)
-            .map<IResource>(type => ({
+        ...dsUtils.pickSome({ min: 2, max: 3 })
+            .from(datasetConsts.resourcesClass0)
+            .map<IResource>(type => buildResource({
                 type,
                 resourceClass: "industry",
-                productionRate: dsUtils.randomFrom1(100)
-            })),
+                unit: "tons",
+            }, 100)),
 
-        ...dsUtils.pickSome({ min: 1, max: 2 })
-            .from(datasetConsts.resourcesClass2)
-            .map<IResource>(type => ({
+        ...dsUtils.pickSome({ min: 2, max: 3 })
+            .from(datasetConsts.resourcesClass0)
+            .map<IResource>(type => buildResource({
                 type,
                 resourceClass: "high_tech",
-                productionRate: dsUtils.randomFrom1(50)
-            })),
+                unit: "tons",
+            }, 50)),
 
-        ...dsUtils.pickSome({ min: 1, max: 2 })
-            .from(datasetConsts.resourcesClass3)
-            .map<IResource>(type => ({
+        ...dsUtils.pickSome({ min: 2, max: 3 })
+            .from(datasetConsts.resourcesClass0)
+            .map<IResource>(type => buildResource({
                 type,
                 resourceClass: "magical",
-                productionRate: dsUtils.randomFrom1(30)
-            }))
+                unit: "kilograms",
+            }, 30)),
     ]
 }
 
@@ -91,7 +107,7 @@ function generateCrimeRates() {
     return datasetConsts.crimeTypes
         .map<ICrimeRate>(type => ({
             type,
-            rate: dsUtils.randomInt(0, 30)
+            rate: dsUtils.randomInt(0, 90)
         }))
 }
 
