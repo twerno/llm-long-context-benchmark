@@ -23,9 +23,8 @@ export interface ITestData {
  */
 async function generateData(options: IGenerateDataProps): Promise<ITestData> {
     const FILLER_TEXT = "This is the filler text which has no real meaning."
-    const HIDDEN_PHRASE_TEMPLATE_1 = `HIDDEN_PHRASE_`
+    const HIDDEN_PHRASE_TEMPLATE_1 = `secret phrase no `
     const HIDDEN_PHRASE_TEMPLATE_2 = ``
-
 
     const noOfHiddenPhrases = Math.max(1, options.noOfHiddenPhrases)
     const hiddenPhraseNumerPartLength = Math.floor(Math.log10(noOfHiddenPhrases)) + 1
@@ -33,37 +32,25 @@ async function generateData(options: IGenerateDataProps): Promise<ITestData> {
     const textLength = Math.max(options.textLength, FILLER_TEXT.length)
     const repetitions = Math.ceil((textLength - hiddenPhraseTotalLength) / FILLER_TEXT.length + 1)
 
-    // text generation
-    let text = ""
-    for (let i = 0; i < repetitions; i++) {
-        text += (i === 0 ? "" : " ") + FILLER_TEXT;
-    }
 
-    text = text.substring(0, textLength);
+    const fillerTextSB = Array.from({ length: repetitions })
+        .map(() => FILLER_TEXT)
+
 
     // hidden phrases generation
-    const hiddenPhrasesPositions: Array<{ position: number, hiddenPhrase: string }> = [];
+    const hiddenPhrases: string[] = [];
     for (let i = 0; i < noOfHiddenPhrases; i++) {
         const hiddenPhraseNumberPart = (i + 1).toString().padStart(hiddenPhraseNumerPartLength, "0")
         const hiddenPhrase = HIDDEN_PHRASE_TEMPLATE_1 + hiddenPhraseNumberPart + HIDDEN_PHRASE_TEMPLATE_2
 
-        const position = Math.floor(Math.random() * text.length)
-        hiddenPhrasesPositions.push({ position, hiddenPhrase: hiddenPhrase });
+        const position = Math.floor(Math.random() * fillerTextSB.length)
+        fillerTextSB.splice(position, 0, hiddenPhrase)
+        hiddenPhrases.push(hiddenPhrase);
     }
-
-    hiddenPhrasesPositions.sort((a, b) => a.position - b.position)
-    // inserting hidden phrases into text
-    let finalText = ""
-    let startPosition = 0;
-    for (const { hiddenPhrase: hiddenPhrase, position } of hiddenPhrasesPositions) {
-        finalText += text.substring(startPosition, position) + hiddenPhrase
-        startPosition = position + 1
-    }
-    finalText += text.substring(startPosition)
 
     return {
-        text: finalText,
-        hiddenPhrases: hiddenPhrasesPositions.map(v => v.hiddenPhrase).sort()
+        text: fillerTextSB.join(" "),
+        hiddenPhrases
     }
 }
 
@@ -78,7 +65,7 @@ async function buildPromptV1(options: IGenerateDataProps) {
     const prompt = [
         data.text,
         "\n\n",
-        `Identify hidden text and answer with "The hidden phrases are: " followed by a comma separated list of the phrases.`
+        `Identify every occurrence of secret text and answer with "The hidden phrases are: " followed by a comma separated list of the full phrases.`
     ].join("")
 
     return {
