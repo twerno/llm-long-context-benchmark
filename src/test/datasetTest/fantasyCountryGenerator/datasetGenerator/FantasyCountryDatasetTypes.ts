@@ -54,3 +54,9 @@ export interface ICrimeRate {
     type: string,
     rate: number
 }
+
+export interface IFact {
+    name: string,
+    type: "mountain" | "lake"
+    value: number
+}

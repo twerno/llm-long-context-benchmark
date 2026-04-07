@@ -1,4 +1,4 @@
-import type { ICountrySchema, IProvince } from "./datasetGenerator/FantasyCountryDatasetTypes";
+import type { ICountrySchema, IFact, IProvince } from "./datasetGenerator/FantasyCountryDatasetTypes";
 import DatasetUtils from "./DatasetUtils";
 
 
@@ -64,3 +64,10 @@ function provincePrompt(province: IProvince): string {
     return result.join("\n");
 }
 
+export function convertfact2Prompt(fact: IFact): string {
+    switch (fact.type) {
+        case "mountain": return `FACT: The highest mountain across all counties is "${fact.name}" and it's ${fact.value} meters high.`
+        case "lake": return `FACT: The deepest lake across all counties is "${fact.name}" and it's ${fact.value} meters deep.`
+    }
+
+}
