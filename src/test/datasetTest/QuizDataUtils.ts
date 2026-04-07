@@ -36,17 +36,12 @@ async function buildQuizData(props: IBuildQuizProps): Promise<IQuizData> {
             .map(() => fantasyCountryGenerator.generateCountry())
     )
 
-    const datasetPrompt = [
-        ...factsToInsert.datasetPropt.start,
-        ...dataset.map(convertFantasyCountryDataset2Prompt),
-        ...factsToInsert.datasetPropt.end
-    ].join("\n\n")
+    const datasetPrompt = dataset.map(convertFantasyCountryDataset2Prompt)
+        .join("\n\n")
 
     const quizEntries = Array.from({ length: props.setsOfQuestions })
         .map(() => buildFantasyCountryQuiz(dataset))
         .reduce((prev, curr) => ([...prev, ...curr]), [])
-
-    quizEntries.push(...factsToInsert.quizEntries)
 
     const quizData = {
         quizId: props.quizId,
@@ -94,38 +89,38 @@ function loadQuiz(quizId: string): IQuizData | null {
     }
 }
 
-const factsToInsert: { datasetPropt: { start: string[], end: string[] }, quizEntries: IQuizEntry[] } = {
-    datasetPropt: {
-        start: [
-            `FACT: The highest mountain across all counties is QuiraNidram and it's 2565 meters high.`,
-            `FACT: The deepest lake across all counties is Kzu'La and it's 7654 meters deep.`
-        ],
-        end: [
-            `FACT: The highest mountain across all counties is TirumKrak and it's 3451 meters high.`,
-            `FACT: The deepest lake across all counties is Apornonio and it's 3123 meters deep.`
-        ]
-    },
-    quizEntries: [
-        {
-            question: "What is the name of the highest mountain?",
-            answer: "The highest mouintain is the TirumKrak",
-            rawData: "TirumKrak"
-        },
-        {
-            question: "How high is the highest mountain?",
-            answer: "The highest mouintain is 3451 meters high",
-            rawData: 3451
-        },
-        {
-            question: "What is the name of the deepest lake?",
-            answer: "The deepest lake is Kzu'La",
-            rawData: "Kzu'La"
-        },
-        {
-            question: "What is the deep of the deepest lake?",
-            answer: "The deepest lake is 7654 meters deep",
-            rawData: "7654"
-        }
-    ]
+// const factsToInsert: { datasetPropt: { start: string[], end: string[] }, quizEntries: IQuizEntry[] } = {
+//     datasetPropt: {
+//         start: [
+//             `FACT: The highest mountain across all counties is QuiraNidram and it's 2565 meters high.`,
+//             `FACT: The deepest lake across all counties is Kzu'La and it's 7654 meters deep.`
+//         ],
+//         end: [
+//             `FACT: The highest mountain across all counties is TirumKrak and it's 3451 meters high.`,
+//             `FACT: The deepest lake across all counties is Apornonio and it's 3123 meters deep.`
+//         ]
+//     },
+//     quizEntries: [
+//         {
+//             question: "What is the name of the highest mountain?",
+//             answer: "The highest mouintain is the TirumKrak",
+//             rawData: "TirumKrak"
+//         },
+//         {
+//             question: "How high is the highest mountain?",
+//             answer: "The highest mouintain is 3451 meters high",
+//             rawData: 3451
+//         },
+//         {
+//             question: "What is the name of the deepest lake?",
+//             answer: "The deepest lake is Kzu'La",
+//             rawData: "Kzu'La"
+//         },
+//         {
+//             question: "What is the deep of the deepest lake?",
+//             answer: "The deepest lake is 7654 meters deep",
+//             rawData: "7654"
+//         }
+//     ]
 
-}
+// }
