@@ -13,7 +13,7 @@ export default function buildQuiz(dataset: ICountrySchema[]) {
     return [
         ...build10SimpleQuestions(dataset),
         ...buildComplexQuestions(dataset),
-        ...buildTrickyQuestions(dataset),
+        // ...buildTrickyQuestions(dataset),
         // ...buildImpossiblesQuestions(dataset)
     ];
 }
@@ -185,7 +185,7 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     let province2 = dsUtils.pickOne(country.province);
     let fauna = dsUtils.pickOne(province2.fauna);
     quizEntries.push({
-        question: `Is ${fauna} lives in ${province.name}?`,
+        question: `Is ${fauna} lives in ${province.name}? Answer with 'Yes' or 'No'.`,
         answer: province.fauna.includes(fauna) ? `Yes` : `No`,
         rawData: province.fauna.includes(fauna)
     })
@@ -196,7 +196,7 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     province2 = dsUtils.pickOne(country.province);
     let flora = dsUtils.pickOne(province2.flora);
     quizEntries.push({
-        question: `Is ${flora} is growing in ${province.name}?`,
+        question: `Is ${flora} is growing in ${province.name}? Answer with 'Yes' or 'No'.`,
         answer: province.flora.includes(flora) ? `Yes` : `No`,
         rawData: province.flora.includes(flora)
     })
@@ -205,7 +205,7 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
 }
 
 /**
- * Placeholder for building tricky questions.
+ * Those question does not test model ability memory, but its ability to make computations
  */
 function buildTrickyQuestions(dataset: ICountrySchema[]) {
     const quizEntries: IQuizEntry[] = [];

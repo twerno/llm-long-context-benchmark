@@ -78,7 +78,7 @@ function generateResourceProduction() {
             }, 1000)),
 
         ...dsUtils.pickSome({ min: 2, max: 3 })
-            .from(datasetConsts.resourcesClass0)
+            .from(datasetConsts.resourcesClass1)
             .map<IResource>(type => buildResource({
                 type,
                 resourceClass: "industry",
@@ -86,7 +86,7 @@ function generateResourceProduction() {
             }, 100)),
 
         ...dsUtils.pickSome({ min: 2, max: 3 })
-            .from(datasetConsts.resourcesClass0)
+            .from(datasetConsts.resourcesClass2)
             .map<IResource>(type => buildResource({
                 type,
                 resourceClass: "high_tech",
@@ -94,7 +94,7 @@ function generateResourceProduction() {
             }, 50)),
 
         ...dsUtils.pickSome({ min: 2, max: 3 })
-            .from(datasetConsts.resourcesClass0)
+            .from(datasetConsts.resourcesClass3)
             .map<IResource>(type => buildResource({
                 type,
                 resourceClass: "magical",
