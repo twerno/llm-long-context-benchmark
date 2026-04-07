@@ -3,27 +3,27 @@ export default {
         "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink", "Brown", "Black", "White", "Cyan", "Magenta", "Lime", "Teal",
     ],
     stateSystems: ["Autocracy", "Monarchy", "Oligarchy", "Theocracy", "Democracy", "Technocracy", "Plutocracy", "Meritocracy"],
-    // Class 0: Basic/Biological - High volume, low value
+    // Class 0: Basic/Biological   High volume, low value
     resourcesClass0: [
         "Wheat", "Barley", "Rye", "Corn", "Rice", "Oats", "Potatoes", "Carrots",
         "Apples", "Grapes", "Wool", "Cotton", "Linen", "Timber", "Hemp", "Flax",
         "Honey", "Salt", "Sugar", "Water", "Fish", "Beef", "Leather", "Silk", "Herbs"
     ],
-    // Class 1: Industrial/Geological - Specific strata, driving industry
+    // Class 1: Industrial/Geological   Specific strata, driving industry
     resourcesClass1: [
         "Coal", "Iron", "Copper", "Tin", "Lead", "Zinc", "Silver", "Gold",
         "Aluminum", "Nickel", "Sulfur", "Sand", "Clay", "Limestone", "Granite",
         "Basalt", "Quartz", "Slate", "Oil", "Natural Gas", "Rubber", "Mercury",
         "Borax", "Graphite", "Mica"
     ],
-    // Class 2: Advanced/Rare Earth - High tech, high refining requirement
+    // Class 2: Advanced/Rare Earth   High tech, high refining requirement
     resourcesClass2: [
         "Silicon", "Lithium", "Cobalt", "Platinum", "Palladium", "Uranium",
         "Plutonium", "Titanium", "Tungsten", "Neodymium", "Cerium", "Iridium",
         "Osmium", "Rhodium", "Germanium", "Indium", "Gallium", "Selenium",
         "Tellurium", "Yttrium", "Scandium", "Zirconium", "Beryllium", "Tantalum", "Niobium"
     ],
-    // Class 3: Aetheric/Fantastic - Magical, extra-dimensional, extreme value
+    // Class 3: Aetheric/Fantastic   Magical, extra dimensional, extreme value
     resourcesClass3: [
         "Mana Crystals", "Aether", "Dragon Scales", "Phoenix Feathers", "Mithril",
         "Adamantium", "Orichalcum", "Moonstone", "Sunstone", "Shadow Essence",
@@ -78,10 +78,10 @@ export default {
         "Vineeternal", "Sporeinfinite", "Mosseverlasting", "Ferntimeless", "Bloomcelestial", "Thorninfernal", "Seedterrestrial", "Budelemental",
         "Stemmonumental", "Petalgraceful", "Leafelegant", "Rootpowerful", "Vinesupple"
     ],
-    crimeTypes: ["theft", "burglary", "robbery", "assault", "homicide", "fraud", "drug-related crime", "cybercrime", "vandalism", "domestic violence"],
+    crimeTypes: ["theft", "burglary", "robbery", "assault", "homicide", "fraud", "drug related crime", "cybercrime", "vandalism", "domestic violence"],
     climeteTypes: [
-        "Pyroclasic", "Glacial", "Aetheric", "Void-vacuum", "Magmatic", "Cryogenic", "Solar-scorched", "Umbral", "Tempestuous", "Hydro-mist",
-        "Arid-cinder", "Celestial", "Abyssal", "Verdant-tropical", "Permafrost", "Mana-saturated", "Chrono-flux", "Nebulous", "Tidal", "Plasma-heat"
+        "Pyroclasic", "Glacial", "Aetheric", "Void vacuum", "Magmatic", "Cryogenic", "Solar scorched", "Umbral", "Tempestuous", "Hydro mist",
+        "Arid cinder", "Celestial", "Abyssal", "Verdant tropical", "Permafrost", "Mana saturated", "Chrono flux", "Nebulous", "Tidal", "Plasma heat"
     ],
     personNames: [
         "Korg", "Grak", "Bram", "Drun", "Krag", "Bor", "Grond", "Thrum", "Brak", "Grom",
@@ -348,7 +348,7 @@ export default {
     ],
 
     countryNames: [
-        // Imperial & Grand (High-fantasy empires and sovereign states)
+        // Imperial & Grand (High fantasy empires and sovereign states)
         "Aethelgard", "Valerion", "Aurelia", "Solstheim", "Imperia", "Regalis", "Magnus", "Arcanum", "Celestia", "Eldoria",
         "Astrum", "Terra", "Primordia", "Veridia", "Argentum", "Aurum", "Rexland", "Sovereign", "Dominion", "Hegemony",
         "Pantheon", "Zenith", "Apex", "Meridian", "Triumvirate", "Exarchate", "Archon", "Regent", "Monarchia", "Imperialis",
@@ -356,16 +356,16 @@ export default {
         "Utopia", "Hyperion", "Atlas", "Gaia", "Mundus", "Orbis", "Regnum", "Imperium", "Aethelgardia", "Valerionis",
 
         // Tribal & Harsh (Orcish, Dwarven, and Barbarian territories)
-        "Korg-Dun", "Zar-Khul", "Grom-Bak", "Drax-Tor", "Ur-Gorb", "Skar-Vun", "Brund-Ka", "Thrak-Mor", "Grog-Nar", "Zand-Kar",
-        "Krag-Dun", "Bor-Gath", "Drak-Tor", "Ul-Grom", "Sha-Khar", "Vun-Dar", "Kra-Zul", "Mog-Dra", "Rok-Gar", "Skar-Tan",
-        "Drax-In", "Korg-Ra", "Zar-Ma", "Grom-Li", "Brund-Ri", "Thrak-Su", "Grog-Va", "Zand-Ko", "Krag-Si", "Bor-Ta",
-        "Drak-Nu", "Ul-Ka", "Sha-Ri", "Vun-Zo", "Kra-Lu", "Mog-Na", "Rok-De", "Skar-Pi", "Drax-Jo", "Korg-Ke",
+        "Korg Dun", "Zar Khul", "Grom Bak", "Drax Tor", "Ur Gorb", "Skar Vun", "Brund Ka", "Thrak Mor", "Grog Nar", "Zand Kar",
+        "Krag Dun", "Bor Gath", "Drak Tor", "Ul Grom", "Sha Khar", "Vun Dar", "Kra Zul", "Mog Dra", "Rok Gar", "Skar Tan",
+        "Drax In", "Korg Ra", "Zar Ma", "Grom Li", "Brund Ri", "Thrak Su", "Grog Va", "Zand Ko", "Krag Si", "Bor Ta",
+        "Drak Nu", "Ul Ka", "Sha Ri", "Vun Zo", "Kra Lu", "Mog Na", "Rok De", "Skar Pi", "Drax Jo", "Korg Ke",
 
         // Ethereal & Ancient (Elven, Celestial, and Magic realms)
         "Luminara", "Aerendil", "Thalassia", "Sylvaris", "Elentari", "Galadriel", "Arwenia", "Celeborn", "Lothlorien", "Rivendell",
         "Lindon", "Mirkwood", "Imladris", "Eregion", "Elenmor", "Aeris", "Lyra", "Selene", "Nyx", "Astra",
         "Luna", "Solara", "Vesper", "Aurora", "Borealis", "Australis", "Zephyria", "Elysia", "Avalon", "Atlantis",
-        "Lemuria", "Mu", "Hyperborea", "Thule", "Aetheria", "Celestia", "Astrum", "Lunaria", "Solaria", "Terra-Magna",
+        "Lemuria", "Mu", "Hyperborea", "Thule", "Aetheria", "Celestia", "Astrum", "Lunaria", "Solaria", "Terra Magna",
 
         // Dark & Shadowed (Gothic, Undead, and Sinister lands)
         "Dreadmoor", "Nightfell", "Shadowfen", "Gloomhaven", "Mournvale", "Blightwood", "Darkwater", "Blackreach", "Umbra", "Erebus",
@@ -373,7 +373,7 @@ export default {
         "Ossuary", "Sepulcher", "Crypt", "Shadowland", "Nightland", "Darkland", "Gloomland", "Dreadland", "Blightland", "Mournland", "Blackland",
         "Umbraland", "Erebusland", "Tartarusland", "Hadesland", "Styxland", "Acheronland", "Letheland", "Phlegethonland", "Cocytusland", "Necropolisland",
 
-        // Territorial & Descriptive (Geographic-based nations)
+        // Territorial & Descriptive (Geographic based nations)
         "Evergreen", "Riverlands", "Ironhold", "Stormpeak", "Sunvale", "Moonreach", "Starforge", "Frostgate", "Oakheart", "Ravenloft",
         "Blackwater", "Deepwell", "Highgarden", "Stonekeep", "Shadowcrag", "Windhaven", "Tideport", "Amberhold", "Silverleaf", "Stormsurge",
         "Nightfall", "Cloudreach", "Duskvale", "Brightwater", "Grimfort", "Steelgate", "Wyrmrest", "Frostpeak", "Oakvale", "Shadowgate",
@@ -383,10 +383,10 @@ export default {
 
     // Prefixes: Words or syllables to add to the START of a root name
     countryNamePrefixes: [
-        "Neo-", "Grand-", "High-", "Old-", "New-", "Great-", "Under-", "Over-",
-        "Ever-", "Mid-", "Deep-", "Sky-", "Sea-", "Iron-", "Gold-", "Silver-",
-        "Shadow-", "Light-", "Frost-", "Storm-", "Dragon-", "Star-", "Moon-",
-        "Sun-", "Dark-", "Bright-", "North-", "South-", "East-", "West-", "Ethernal "
+        "Neo", "Grand ", "High ", "Old ", "New ", "Great ", "Under ", "Over ",
+        "Ever ", "Mid ", "Deep ", "Sky ", "Sea ", "Iron ", "Gold ", "Silver ",
+        "Shadow ", "Light ", "Frost ", "Storm ", "Dragon ", "Star ", "Moon ",
+        "Sun ", "Dark ", "Bright ", "North ", "South ", "East ", "West ", "Ethernal "
     ],
 
 }
