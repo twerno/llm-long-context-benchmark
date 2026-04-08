@@ -185,8 +185,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     let province2 = dsUtils.pickOne(country.province);
     let fauna = dsUtils.pickOne(province2.fauna);
     quizEntries.push({
-        question: `Is ${fauna} lives in ${province.name}? Answer with 'Yes' or 'No'.`,
-        answer: province.fauna.includes(fauna) ? `Yes` : `No`,
+        question: `Does ${fauna} live in ${province.name}? Answer with 'Yes' or 'No'.`,
+        answer: province.fauna.includes(fauna) ? `Yes, ${fauna} lives in ${province.name}.` : `No, ${fauna} doens't live in ${province.name}.`,
         rawData: province.fauna.includes(fauna)
     })
 
@@ -196,8 +196,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     province2 = dsUtils.pickOne(country.province);
     let flora = dsUtils.pickOne(province2.flora);
     quizEntries.push({
-        question: `Is ${flora} is growing in ${province.name}? Answer with 'Yes' or 'No'.`,
-        answer: province.flora.includes(flora) ? `Yes` : `No`,
+        question: `Does ${flora} grow in ${province.name}? Answer with 'Yes' or 'No'.`,
+        answer: province.flora.includes(flora) ? `Yes, ${flora} grows in ${province.name}` : `No, ${flora} doesn't grow in ${province.name}.`,
         rawData: province.flora.includes(flora)
     })
 
