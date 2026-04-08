@@ -59,7 +59,7 @@ export default class FantasyCountryDatasetGenerator {
 function generateResourceProduction() {
     const buildResource = (props: Pick<IResource, "type" | "resourceClass" | "unit">, rateLimit: number): IResource => {
         const productionRate = dsUtils.randomFrom1(rateLimit)
-        const normalisedProductionInKg = productionRate * (props.type === "ton" ? 1000 : 1)
+        const normalisedProductionInKg = productionRate * (props.unit === "tons" ? 1000 : 1)
         return {
             ...props,
             productionRate,

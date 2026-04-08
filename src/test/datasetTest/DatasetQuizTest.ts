@@ -102,7 +102,7 @@ async function evaluate(props: IEvaluateProps): Promise<IEvaluationResult> {
     }
 
     const correct = evaluatedQuestions
-        .reduce((prev, curr) => curr ? prev++ : prev, 0);
+        .reduce((prev, curr) => prev + (curr.combinedEvaluation ? 1 : 0), 0);
     return {
         evaluatedQuestions,
         correct,
