@@ -2,7 +2,7 @@ import path from "node:path";
 import { ILLMRunner, ILLMRunnerOutput, ILLMRunnerProps } from "../../llmRunner/ILLMRunner";
 import { IQuizEntry } from "./DatasetTypes";
 import QuizDataUtils, { IQuizData } from "./QuizDataUtils";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import FileUtils from "../../utils/FileUtils";
 
 
 /**
@@ -64,10 +64,7 @@ async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): 
     }
     console.log(`Total tokens usage: ${resp?.totalTokens}`)
 
-    if (!existsSync(dirPath)) {
-        mkdirSync(dirPath, { recursive: true });
-    }
-    writeFileSync(path.join(dirPath, `messages.json`), JSON.stringify({ messages, totalTokens: resp?.totalTokens }, null, 2))
+    FileUtils.writeFile(dirPath, `messages.json`, JSON.stringify({ messages, totalTokens: resp?.totalTokens }, null, 2));
 
     return responsesToEvaluate;
 }
@@ -121,13 +118,11 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
 
         process.stdout.write(`${i === 0 ? "" : ", "}${evaluationResult ? "OK" : "FAIL"}`)
 
-        if (!existsSync(props.metadata.dirPath)) {
-            mkdirSync(props.metadata.dirPath, { recursive: true });
-        }
-        writeFileSync(
-            path.join(props.metadata.dirPath, `evaluation_${responseIdx + 1}__${i + 1}.txt`),
+        FileUtils.writeFile(
+            props.metadata.dirPath,
+            `evaluation_${responseIdx + 1}__${i + 1}.txt`,
             message + "\n\n ================================= \n" + resp.output[0]
-        )
+        );
     }
     process.stdout.write("]")
     return finalEvaluation;

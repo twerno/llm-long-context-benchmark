@@ -4,7 +4,8 @@ import buildFantasyCountryQuiz from "./fantasyCountryGenerator/buildFantasyCount
 import convertFantasyCountryDataset2Prompt from "./fantasyCountryGenerator/convertFantasyCountryDataset2Prompt";
 import FantasyCountryDatasetGenerator from "./fantasyCountryGenerator/datasetGenerator/FantasyCountryDatasetGenerator";
 import { ICountrySchema } from "./fantasyCountryGenerator/datasetGenerator/FantasyCountryDatasetTypes";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import FileUtils from "../../utils/FileUtils";
+import { existsSync, readFileSync } from "node:fs";
 
 
 interface IBuildQuizProps {
@@ -59,13 +60,10 @@ async function buildQuizData(props: IBuildQuizProps): Promise<IQuizData> {
 
 function saveQuiz(data: IQuizData) {
     const dirPath = path.join("tmp", "quiz", data.quizId, "data");
-    if (!existsSync(dirPath)) {
-        mkdirSync(dirPath, { recursive: true });
-    }
 
-    writeFileSync(path.join(dirPath, `dataset.json`), JSON.stringify(data.dataset, null, 2))
-    writeFileSync(path.join(dirPath, `dataset_prompt.md`), data.datasetPrompt)
-    writeFileSync(path.join(dirPath, `quiz.json`), JSON.stringify(data.quizEntries, null, 2))
+    FileUtils.writeFile(dirPath, `dataset.json`, JSON.stringify(data.dataset, null, 2))
+    FileUtils.writeFile(dirPath, `dataset_prompt.md`, data.datasetPrompt)
+    FileUtils.writeFile(dirPath, `quiz.json`, JSON.stringify(data.quizEntries, null, 2))
 }
 
 function loadQuiz(quizId: string): IQuizData | null {
