@@ -15,9 +15,9 @@ const joinList = DatasetUtils.joinList;
 export default function convertFantasyCountryDataset2Prompt(country: ICountrySchema): string {
     const result = [
         `# The country name is **"${country.name}"**.`,
-        `It's state system is a ${country.stateSystem} and is ruled by ${country.ruler}.`,
+        `Its state system is ${country.stateSystem} and it is ruled by ${country.ruler}.`,
         `The flag of "${country.name}" has ${country.flagColors.length} colors: ${joinList(country.flagColors)}.`,
-        `It's area is divided into ${country.province.length} provinces: ${joinList(country.province.map(p => p.name))}.`,
+        `Its area is divided into ${country.province.length} provinces: ${joinList(country.province.map(p => p.name))}.`,
         country.province.map(provincePrompt).join("\n")
     ];
     return result.join("\n");
@@ -45,15 +45,15 @@ function provincePrompt(province: IProvince): string {
         const resources = province.resources.filter(v => v.resourceClass === className);
         if (resources.length > 0) {
             const resString = joinList(resources.map(v => `${v.type} - ${v.productionRate} ${v.unit}`));
-            result.push(`It produces ${label} like: ${resString}.`);
+            result.push(`It produces ${label}, such as: ${resString}.`);
         }
     }
 
-    result.push(`The most important representatives of fauna are ${joinList(province.fauna)}, and flora ${joinList(province.flora)}.`);
-    result.push(`All of the representatives of fauna and flora are well suited to survive in a ${province.climate} climate.`);
+    result.push(`The most prominent members of the fauna are ${joinList(province.fauna)}, and the flora includes ${joinList(province.flora)}.`);
+    result.push(`All representatives of the fauna and flora are well suited to survive in a ${province.climate} climate.`);
     if (province.crimeRates.length > 0) {
         const crimeString = joinList(province.crimeRates.map(c => `${c.type} - ${c.rate} cases`));
-        result.push(`The province of ${province.name} also has its darker side, the crime rates per 1000 citizens are as follows: ${crimeString}.`);
+        result.push(`The province of ${province.name} also has its darker side; the crime rates per 1,000 citizens are as follows: ${crimeString}.`);
     }
 
     if (province.cities.length > 0) {
@@ -69,5 +69,4 @@ export function convertfact2Prompt(fact: IFact): string {
         case "mountain": return `FACT: The highest mountain across all counties is "${fact.name}" and it's ${fact.value} meters high.`
         case "lake": return `FACT: The deepest lake across all counties is "${fact.name}" and it's ${fact.value} meters deep.`
     }
-
 }

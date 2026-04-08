@@ -113,11 +113,10 @@ async function evaluate(props: IEvaluateProps): Promise<IEvaluationResult> {
 async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, responseIdx: number, props: IEvaluateProps): Promise<IQuestionEvaluation> {
     const repeatEvaluationNTimes = Math.max(1, props.repeatEvaluationNTimes)
 
-    const message = [
-        `The hint to help you evaluate the users' answer: "${responseToEvaluate.quizEntry.answer}".`,
-        `Check if the given answer below is correct and respond with "TRUE" when it is or "FALSE" otherwise.`,
-        `The answer given by user is:\n ${responseToEvaluate.llmAnswer}`
-    ].join("\n")
+    const message = messageTemplate
+        .replace("<QUESTION>", responseToEvaluate.quizEntry.question)
+        .replace("<HINT>", responseToEvaluate.quizEntry.answer)
+        .replace("<ANSWER>", responseToEvaluate.llmAnswer);
 
     const evaluationResults: boolean[] = []
     process.stdout.write("[")
@@ -125,7 +124,12 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
 
         // force new session
         const taskId = `taskId=${Math.floor(Math.random() * 1e9)}\n`;
-        const resp = await props.llmRunner.run({ messages: [{ role: "user", content: taskId + message }] })
+        const resp = await props.llmRunner.run({
+            messages: [
+                { role: "system", content: taskId + systemPrompt },
+                { role: "user", content: message }
+            ]
+        })
 
         const evaluationResult = resp.output[0].includes("TRUE") && !resp.output[0].includes("FALSE");
         evaluationResults.push(evaluationResult)
@@ -159,3 +163,25 @@ export default {
     execute,
     evaluate
 }
+
+const systemPrompt = `### ROLE
+You are a strict grading assistant. Your task is to evaluate if the User's Answer is correct based on the provided Reference Information in response to the Question.
+
+### EVALUATION RULES
+1. **Semantic Accuracy:** The User's Answer must be semantically equivalent to the Reference Information. 
+2. **Flexibility:** Accept synonyms, different phrasing, and paraphrasing, provided the core fact is correct.
+3. **Irrelevant Info:** If the user provides additional information that is outside the scope of the question, ignore it and focus only on whether the core answer is correct.
+4. **Typos:** Do not accept answers with spelling errors.
+5. **Strictness:** If the user's answer contradicts the Reference Information or is factually incorrect, it must be FALSE.
+
+### OUTPUT FORMAT
+Respond ONLY with one of these two words:
+- "TRUE" if the answer is correct.
+- "FALSE" if the answer is incorrect.
+
+Do not provide any explanations, notes, or extra text.`;
+
+const messageTemplate = `### DATA
+- **Question:** "<QUESTION>"
+- **Reference Information (Correct Answer/Hint):** "<HINT>"
+- **User's Answer:** "<ANSWER>"`;
