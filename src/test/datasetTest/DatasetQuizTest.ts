@@ -79,43 +79,58 @@ interface IEvaluateProps {
     responsesToEvaluate: ILLMResponseToEvaluete[],
     repeatEvaluationNTimes: number
 }
-async function evaluate(props: IEvaluateProps) {
 
-    let correct = 0;
+interface IQuestionEvaluation {
+    quizEntry: IQuizEntry,
+    llmAnswer: string,
+    evaluationResults: boolean[],
+    combinedEvaluation: boolean
+}
+interface IEvaluationResult {
+    evaluatedQuestions: IQuestionEvaluation[],
+    correct: number,
+    total: number
+}
+async function evaluate(props: IEvaluateProps): Promise<IEvaluationResult> {
 
+    const evaluatedQuestions: IQuestionEvaluation[] = []
     for (let i = 0; i < props.responsesToEvaluate.length; i++) {
         process.stdout.write(`[Quiz="${props.metadata.quizId}"] [runId=${props.metadata.runId}] Evaluating answer for question [${i + 1}/${props.responsesToEvaluate.length}]... `)
         const result = await evaluateResponse(props.responsesToEvaluate[i], i, props);
-        process.stdout.write(` - ${result ? "OK" : "FAIL"}\n`)
-        if (result) correct++;
+        evaluatedQuestions.push(result);
+        process.stdout.write(` - ${result.combinedEvaluation ? "OK" : "FAIL"}\n`)
     }
 
+    const correct = evaluatedQuestions
+        .reduce((prev, curr) => curr ? prev++ : prev, 0);
     return {
+        evaluatedQuestions,
         correct,
         total: props.responsesToEvaluate.length,
-        falsePossitive: undefined
     }
 }
 
-async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, responseIdx: number, props: IEvaluateProps) {
-    const repeatEvaluationNTimes = Math.min(Math.max(1, props.repeatEvaluationNTimes), 10)
+async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, responseIdx: number, props: IEvaluateProps): Promise<IQuestionEvaluation> {
+    const repeatEvaluationNTimes = Math.max(1, props.repeatEvaluationNTimes)
 
     const message = [
-        `The hint to help you evaluate the answer is: "${responseToEvaluate.quizEntry.answer}".`,
+        `The hint to help you evaluate the users' answer: "${responseToEvaluate.quizEntry.answer}".`,
         `Check if the given answer below is correct and respond with "TRUE" when it is or "FALSE" otherwise.`,
-        `The given answer is: "${responseToEvaluate.llmAnswer}"`
+        `The answer given by user is:\n ${responseToEvaluate.llmAnswer}`
     ].join("\n")
 
+    const evaluationResults: boolean[] = []
     process.stdout.write("[")
-    let finalEvaluation = true;
     for (let i = 0; i < repeatEvaluationNTimes; i++) {
 
+        // force new session
         const taskId = `taskId=${Math.floor(Math.random() * 1e9)}\n`;
         const resp = await props.llmRunner.run({ messages: [{ role: "user", content: taskId + message }] })
 
         const evaluationResult = resp.output[0].includes("TRUE") && !resp.output[0].includes("FALSE");
-        finalEvaluation = finalEvaluation && evaluationResult;
+        evaluationResults.push(evaluationResult)
 
+        // log progress
         process.stdout.write(`${i === 0 ? "" : ", "}${evaluationResult ? "OK" : "FAIL"}`)
 
         FileUtils.writeFile(
@@ -125,7 +140,14 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
         );
     }
     process.stdout.write("]")
-    return finalEvaluation;
+
+    const combinedEvaluation = evaluationResults.reduce((prev, curr) => prev && curr, true);
+    return {
+        quizEntry: responseToEvaluate.quizEntry,
+        llmAnswer: responseToEvaluate.llmAnswer,
+        evaluationResults,
+        combinedEvaluation
+    }
 }
 
 
