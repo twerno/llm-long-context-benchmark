@@ -3,18 +3,32 @@ import { LMStudioApiRunner } from "./llmRunner/APILLMRunner";
 import HiddenTextTest from "./test/HiddenPhraseTest";
 import SequenceOfNumbersTest from "./test/SequenceOfNumbersTest";
 import DatasetQuizTest from "./test/datasetTest/DatasetQuizTest";
+import { LlamaServerRunner } from "./llmRunner/LlamaServerRunner";
 
 
 async function test() {
 
-    // let resp = await LMStudioApiRunner.run({ prompt: ["Poland is the capital city of which country?"] })
-    // console.log(resp);
+    const server = new LlamaServerRunner({
+        executablePath: "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+        modelPath: "D:/modele AI/LM Studio/speakleash/Bielik-4.5B-v3.0-Instruct-GGUF/Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
+        model: "Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
+        host: "127.0.0.1",
+        port: 5000,
+    });
+    try {
+        await server.start();
+        let resp = await server.run({ messages: [{ role: "user", content: "Poland is the capital city of which country?" }] })
+        console.log(resp);
+    } finally {
+        server.stop();
+    }
+
 
     // let resp = await LMStudioApiRunner.run({ prompt: ["Imagine 600 names of fictional pokemon like creatures, answer with the coma separated list of names. Be creative."] })
     // console.log(resp);
     // await testHiddenText();
 
-    await testSequenceOfNumbers();
+    // await testSequenceOfNumbers();
     // await testHiddenText();
     // await datasetQuizTest();
 }

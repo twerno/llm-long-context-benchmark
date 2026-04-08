@@ -8,6 +8,7 @@ type ChatCompletionRequestSchema = {
         content: string
     }>
 }
+
 const ErrorResponseSchema = z.object({
     error: z.object({
         message: z.string(),
@@ -37,7 +38,7 @@ const ChatCompletionResponseSchema = z.object({
     })
 });
 
-interface OpenApiApiRunnerProps {
+export interface OpenApiApiRunnerProps {
     model?: string
     // top_p
     // top_k
@@ -54,9 +55,9 @@ interface OpenApiApiRunnerProps {
 }
 
 export class OpenApiApiRunner implements ILLMRunner {
+    private CHAT_PATH: string = "/v1/chat/completions";
 
-    public constructor(private apiUrl: string, private props?: OpenApiApiRunnerProps) {
-
+    public constructor(private host: string, private props?: OpenApiApiRunnerProps) {
     }
 
     public async run(props: ILLMRunnerProps): Promise<ILLMRunnerOutput> {
@@ -70,8 +71,7 @@ export class OpenApiApiRunner implements ILLMRunner {
 
         try {
             const start = performance.now();
-
-            const response = await fetch(this.apiUrl,
+            const response = await fetch(this.host + this.CHAT_PATH,
                 {
                     method: 'POST',
                     headers: {
@@ -108,4 +108,4 @@ export class OpenApiApiRunner implements ILLMRunner {
     }
 }
 
-export const LMStudioApiRunner = new OpenApiApiRunner('http://127.0.0.1:1234/v1/chat/completions');
+export const LMStudioApiRunner = new OpenApiApiRunner('http://127.0.0.1:1234');
