@@ -186,7 +186,9 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     let fauna = dsUtils.pickOne(province2.fauna);
     quizEntries.push({
         question: `Does ${fauna} live in ${province.name}? Answer with 'Yes' or 'No'.`,
-        answer: province.fauna.includes(fauna) ? `Yes, ${fauna} lives in ${province.name}.` : `No, ${fauna} doens't live in ${province.name}.`,
+        answer: province.fauna.includes(fauna)
+            ? `A simple 'yes' as an answer is sufficient; Extra context to help with evaluation: "${fauna} does live in ${province.name}".`
+            : `A simple 'no' as an answer is sufficient; Extra context to help with evaluation: "${fauna} doesn't live in ${province.name}".`,
         rawData: province.fauna.includes(fauna)
     })
 
@@ -197,7 +199,9 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     let flora = dsUtils.pickOne(province2.flora);
     quizEntries.push({
         question: `Does ${flora} grow in ${province.name}? Answer with 'Yes' or 'No'.`,
-        answer: province.flora.includes(flora) ? `Yes, ${flora} grows in ${province.name}` : `No, ${flora} doesn't grow in ${province.name}.`,
+        answer: province.flora.includes(flora)
+            ? `A simple 'yes' as an answer is sufficient; Extra context to help with evaluation: "${flora} does grow in ${province.name}".`
+            : `A simple 'no' as an answer is sufficient; Extra context to help with evaluation: "${flora} doesn't grow in ${province.name}".`,
         rawData: province.flora.includes(flora)
     })
 

@@ -46,7 +46,7 @@ interface IExecureProps {
 
 async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): Promise<ILLMResponseToEvaluete[]> {
     const responsesToEvaluate: ILLMResponseToEvaluete[] = []
-
+    console.log(`[Quiz="${quizData.quizId}"] [runId=${runId}] starting with dataset size=${quizData.dataset.length}.`)
     const messages: ILLMRunnerProps["messages"] = [{ role: "user", content: quizData.datasetPrompt }]
 
     let resp: ILLMRunnerOutput | undefined
@@ -104,7 +104,7 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
     const repeatEvaluationNTimes = Math.min(Math.max(1, props.repeatEvaluationNTimes), 10)
 
     const message = [
-        `The correct answer is as follows "${responseToEvaluate.quizEntry.answer}".`,
+        `The hint to help you evaluate the answer is: "${responseToEvaluate.quizEntry.answer}".`,
         `Check if the given answer below is correct and respond with "TRUE" when it is or "FALSE" otherwise.`,
         `The given answer is: "${responseToEvaluate.llmAnswer}"`
     ].join("\n")
