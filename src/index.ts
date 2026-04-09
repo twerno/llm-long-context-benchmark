@@ -1,8 +1,8 @@
 import path from "node:path";
 import { LMStudioApiRunner } from "./llmRunner/APILLMRunner";
-import HiddenTextTest from "./test/HiddenPhraseTest";
-import SequenceOfNumbersTest from "./test/SequenceOfNumbersTest";
-import DatasetQuizTest from "./test/datasetTest/DatasetQuizTest";
+import HiddenTextTest from "./benchmark/HiddenPhraseTest";
+import SequenceOfNumbersTest from "./benchmark/SequenceOfNumbersTest";
+import DatasetQuizTest from "./benchmark/datasetTest/DatasetQuizTest";
 import { LlamaServerRunner } from "./llmRunner/LlamaServerRunner";
 import { ILLMRunner } from "./llmRunner/ILLMRunner";
 
