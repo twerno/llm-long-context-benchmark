@@ -27,7 +27,7 @@ export default {
     loadQuiz,
 }
 
-async function buildQuizData(props: IBuildQuizProps): Promise<IQuizData> {
+async function buildQuizData(props: IBuildQuizProps, benchmarkHomeDir: string): Promise<IQuizData> {
     console.log(`[Quiz="${props.quizId}"] data generation start.`)
 
     const fantasyCountryGenerator = new FantasyCountryDatasetGenerator();
@@ -52,22 +52,22 @@ async function buildQuizData(props: IBuildQuizProps): Promise<IQuizData> {
     }
 
     console.log(`[Quiz="${props.quizId}"] data generated.`)
-    saveQuiz(quizData)
+    saveQuiz(quizData, benchmarkHomeDir)
     console.log(`[Quiz="${props.quizId}"] data saved.`)
 
     return quizData;
 }
 
-function saveQuiz(data: IQuizData) {
-    const dirPath = path.join("tmp", "quiz", data.quizId, "data");
+function saveQuiz(data: IQuizData, benchmarkHomeDir: string) {
+    const dirPath = path.join(benchmarkHomeDir, "quiz_data", data.quizId);
 
     FileUtils.writeFile(dirPath, `dataset.json`, JSON.stringify(data.dataset, null, 2))
     FileUtils.writeFile(dirPath, `dataset_prompt.md`, data.datasetPrompt)
     FileUtils.writeFile(dirPath, `quiz.json`, JSON.stringify(data.quizEntries, null, 2))
 }
 
-function loadQuiz(quizId: string): IQuizData | null {
-    const dirPath = path.join("tmp", "quiz", quizId, "data");
+function loadQuiz(quizId: string, benchmarkHomeDir: string): IQuizData | null {
+    const dirPath = path.join(benchmarkHomeDir, "quiz_data", quizId);
     if (!existsSync(dirPath)) {
         return null;
     }
@@ -86,39 +86,3 @@ function loadQuiz(quizId: string): IQuizData | null {
         quizEntries: JSON.parse(quizTEXT)
     }
 }
-
-// const factsToInsert: { datasetPropt: { start: string[], end: string[] }, quizEntries: IQuizEntry[] } = {
-//     datasetPropt: {
-//         start: [
-//             `FACT: The highest mountain across all counties is QuiraNidram and it's 2565 meters high.`,
-//             `FACT: The deepest lake across all counties is Kzu'La and it's 7654 meters deep.`
-//         ],
-//         end: [
-//             `FACT: The highest mountain across all counties is TirumKrak and it's 3451 meters high.`,
-//             `FACT: The deepest lake across all counties is Apornonio and it's 3123 meters deep.`
-//         ]
-//     },
-//     quizEntries: [
-//         {
-//             question: "What is the name of the highest mountain?",
-//             answer: "The highest mouintain is the TirumKrak",
-//             rawData: "TirumKrak"
-//         },
-//         {
-//             question: "How high is the highest mountain?",
-//             answer: "The highest mouintain is 3451 meters high",
-//             rawData: 3451
-//         },
-//         {
-//             question: "What is the name of the deepest lake?",
-//             answer: "The deepest lake is Kzu'La",
-//             rawData: "Kzu'La"
-//         },
-//         {
-//             question: "What is the deep of the deepest lake?",
-//             answer: "The deepest lake is 7654 meters deep",
-//             rawData: "7654"
-//         }
-//     ]
-
-// }

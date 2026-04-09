@@ -1,4 +1,3 @@
-import path from "node:path";
 import { ILLMRunner, ILLMRunnerOutput, ILLMRunnerProps } from "../../llmRunner/ILLMRunner";
 import { IQuizEntry } from "./DatasetTypes";
 import QuizDataUtils, { IQuizData } from "./QuizDataUtils";
@@ -13,9 +12,9 @@ export interface IGenerateDataProps {
     setsOfQuestions: number
 }
 
-async function getQuizData(options: IGenerateDataProps): Promise<IQuizData> {
+async function getQuizData(options: IGenerateDataProps, benchmarkHomeDir: string): Promise<IQuizData> {
     const quizId = `ds_size_${options.datasetSize}__questions_size_${options.setsOfQuestions}`
-    const quizData = QuizDataUtils.loadQuiz(quizId);
+    const quizData = QuizDataUtils.loadQuiz(quizId, benchmarkHomeDir);
     if (quizData) {
         console.log(`[Quiz="${quizId}"] restored from file.`)
         return quizData;
@@ -25,7 +24,8 @@ async function getQuizData(options: IGenerateDataProps): Promise<IQuizData> {
             amountOfCountriesInDS: options.datasetSize,
             quizId,
             setsOfQuestions: options.setsOfQuestions
-        }
+        },
+        benchmarkHomeDir
     )
 
     return newQuizData;
