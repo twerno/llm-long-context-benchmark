@@ -5,7 +5,7 @@ import dsUtils from "./DatasetUtils"
 
 /**
  * Builds a quiz from the provided fantasy country dataset.
- * 
+ *
  * @param dataset - An array of country schemas to generate questions from.
  * @returns An array of quiz entries containing questions and answers.
  */
@@ -13,16 +13,13 @@ export default function buildQuiz(dataset: ICountrySchema[]) {
     return [
         ...build10SimpleQuestions(dataset),
         ...buildComplexQuestions(dataset),
-        // ...buildTrickyQuestions(dataset),
-        // ...buildImpossiblesQuestions(dataset)
+        ...buildTrickyQuestions(dataset),
+        ...buildImpossiblesQuestions(dataset)
     ];
 }
 
 /**
  * Generates 10 simple questions based on the provided dataset.
- * 
- * @param dataset - An array of country schemas to generate questions from.
- * @returns An array of quiz entries containing simple questions and answers.
  */
 function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     const quizEntries: IQuizEntry[] = [];
@@ -31,28 +28,32 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     quizEntries.push({
         question: `What is the full name of the ruler of the ${country.name}?`,
         answer: `FACT: The ruler of the country "${country.name}" is "${country.ruler}".`,
-        rawData: country.ruler
+        rawData: country.ruler,
+        type: "FACT_RETRIEVAL"
     })
     // 2
     country = dsUtils.pickOne(dataset);
     quizEntries.push({
         question: `What are the colors of the ${country.name}?`,
         answer: `FACT: The colors of the country "${country.name}" are ${country.flagColors.join(", ")}.`,
-        rawData: country.flagColors
+        rawData: country.flagColors,
+        type: "FACT_RETRIEVAL"
     })
     // 3
     country = dsUtils.pickOne(dataset);
     quizEntries.push({
         question: `What is the state system of the ${country.name}?`,
         answer: `FACT: The state system of the country "${country.name}" is "${country.stateSystem}".`,
-        rawData: country.stateSystem
+        rawData: country.stateSystem,
+        type: "FACT_RETRIEVAL"
     })
     // 4
     country = dsUtils.pickOne(dataset);
     quizEntries.push({
         question: `How many provinces has the ${country.name}?`,
         answer: `FACT: There are ${country.province.length} provinces in the country "${country.name}".`,
-        rawData: `${country.province.length}`
+        rawData: `${country.province.length}`,
+        type: "FACT_RETRIEVAL"
     })
     // 5
     country = dsUtils.pickOne(dataset);
@@ -60,7 +61,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     quizEntries.push({
         question: `In which country is the ${province.name} province located?`,
         answer: `FACT: The province "${province.name}" is located in the country "${country.name}".`,
-        rawData: country.name
+        rawData: country.name,
+        type: "RELATIONAL_MAPPING"
     })
     // 6
     country = dsUtils.pickOne(dataset);
@@ -68,7 +70,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     quizEntries.push({
         question: `What are the names of the resources produced in ${province.name}?`,
         answer: `FACT: The province "${province.name}" of the country "${country.name}" produces the following resources: ${province.resources.map(p => p.type).join(", ")}.`,
-        rawData: province.resources.map(p => p.type)
+        rawData: province.resources.map(p => p.type),
+        type: "FACT_RETRIEVAL"
     })
     // 7
     country = dsUtils.pickOne(dataset);
@@ -76,7 +79,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     quizEntries.push({
         question: `What are the cities in ${province.name}?`,
         answer: `FACT: The "${province.name}" province of the country "${country.name}" has the following cities: ${province.cities.map(c => c.name).join(", ")}.`,
-        rawData: province.cities.map(c => c.name)
+        rawData: province.cities.map(c => c.name),
+        type: "FACT_RETRIEVAL"
     })
 
     // 8
@@ -84,7 +88,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     quizEntries.push({
         question: `Which country is ruled by ${country.ruler}?`,
         answer: `FACT: "${country.ruler}" is the ruler of country "${country.name}".`,
-        rawData: country.name
+        rawData: country.name,
+        type: "RELATIONAL_MAPPING"
     })
 
     // 9
@@ -94,7 +99,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     quizEntries.push({
         question: `In which country is the city of ${city.name} located?`,
         answer: `FACT: The city of "${city.name}" is located in the country "${country.name}".`,
-        rawData: country.name
+        rawData: country.name,
+        type: "RELATIONAL_MAPPING"
     })
 
     // 10
@@ -103,7 +109,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[]): IQuizEntry[] {
     quizEntries.push({
         question: `What is the area of the ${province.name}?`,
         answer: `FACT: The area of the province "${province.name}" is ${province.area} square kilometers.`,
-        rawData: `${province.area}`
+        rawData: `${province.area}`,
+        type: "FACT_RETRIEVAL"
     })
     return quizEntries;
 }
@@ -119,7 +126,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `Which country has the largest area?`,
         answer: `FACT: Country "${country.name}" has the largest area.`,
-        rawData: country.name
+        rawData: country.name,
+        type: "AGGREGATION_AND_MATH"
     })
 
     // 2
@@ -128,7 +136,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `List all cities of the country with the smallest area?`,
         answer: `FACT: Cities of the smallest country ("${country.name}") are ${DatasetUtils.joinList(cities)}.`,
-        rawData: cities
+        rawData: cities,
+        type: "AGGREGATION_AND_MATH"
     })
 
     // 3
@@ -142,9 +151,11 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
         .filter(p => p.crimeRates.find(c => c.type === criminalRate.type && c.rate <= criminalRate.rate))
 
     quizEntries.push({
-        question: `List all provinces that belong to a country with ${color} in its flag and has a criminal rate of ${criminalRate.type} less than or equal to ${criminalRate.rate}.`,
+        question: `List all provinces that belong to a country with ${color} in its flag and has a criminal rate of ${criminalRate.type} less than or equal to
+ ${criminalRate.rate}.`,
         answer: `FACT: The provinces are: ${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
-        rawData: provinces.map(p => p.name)
+        rawData: provinces.map(p => p.name),
+        type: "LOGICAL_FILTERING"
     })
 
     // 4
@@ -153,7 +164,7 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
             name: c.name,
             cities: c.province
                 .map(p => p.cities)
-                .reduce((prev, curr) => ([...prev, ...curr]), [])
+                .reduce((prev, curr) => [...prev, ...curr], [])
         }))
         .sort((a, b) => a.cities.length - b.cities.length)
         .reverse()
@@ -164,7 +175,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
         answer: countriesAndCities.length === 1
             ? `FACT: The country with greatest numbers of cities is "${countriesAndCities[0].name}"`
             : `FACT: There are ${countriesAndCities.length} countries with the greatest numbers of cities: ${DatasetUtils.joinList(countriesAndCities.map(c => c.name))}.`,
-        rawData: countriesAndCities.map(c => c.name)
+        rawData: countriesAndCities.map(c => c.name),
+        type: "AGGREGATION_AND_MATH"
     })
 
     // 5
@@ -176,7 +188,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `What is the total resource production of ${country.name}? Sum everything up and give a single total number.`,
         answer: `FACT: The total resource production of the country "${country.name}" is ${totalResourceProductionInKg} kilograms.`,
-        rawData: totalResourceProductionInKg
+        rawData: totalResourceProductionInKg,
+        type: "AGGREGATION_AND_MATH"
     })
 
     // 6
@@ -189,7 +202,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
         answer: province.fauna.includes(fauna)
             ? `A simple 'yes' as an answer is sufficient; FACT: "Fauna '${fauna}' does live in the province of '${province.name}'".`
             : `A simple 'no' as an answer is sufficient; FACT: "Fauna '${fauna}' doesn't live in the province of '${province.name}'".`,
-        rawData: province.fauna.includes(fauna)
+        rawData: province.fauna.includes(fauna),
+        type: "LOGICAL_FILTERING"
     })
 
     // 7
@@ -202,7 +216,8 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
         answer: province.flora.includes(flora)
             ? `A simple 'yes' as an answer is sufficient; FACT: "Flora '${flora}' does grow in the province of '${province.name}'".`
             : `A simple 'no' as an answer is sufficient; FACT: "Flora '${flora}' doesn't grow in the province of '${province.name}'".`,
-        rawData: province.flora.includes(flora)
+        rawData: province.flora.includes(flora),
+        type: "LOGICAL_FILTERING"
     })
 
     return quizEntries;
@@ -223,7 +238,8 @@ function buildTrickyQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `Which province is the most densely populated?`,
         answer: `The most densely populated province is ${province.name}`,
-        rawData: province.name
+        rawData: province.name,
+        type: "AGGREGATION_AND_MATH"
     })
 
     // 2
@@ -234,7 +250,8 @@ function buildTrickyQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `Which province is the least densely populated?`,
         answer: `The least densely populated province is ${province.name}`,
-        rawData: province.name
+        rawData: province.name,
+        type: "AGGREGATION_AND_MATH"
     })
 
     // 3
@@ -245,7 +262,8 @@ function buildTrickyQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `Which country is the most densely populated?`,
         answer: `The most densely populated province is ${country.name}`,
-        rawData: country.name
+        rawData: country.name,
+        type: "AGGREGATION_AND_MATH"
     })
 
     // 4
@@ -254,8 +272,9 @@ function buildTrickyQuestions(dataset: ICountrySchema[]) {
 
     quizEntries.push({
         question: `Which country is the least densely populated?`,
-        answer: `The least densely populated province is ${country.name}`,
-        rawData: country.name
+        answer: `The most densely populated province is ${country.name}`,
+        rawData: country.name,
+        type: "AGGREGATION_AND_MATH"
     })
 
     return quizEntries;
@@ -274,7 +293,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `List TOP 5 provinces with the greatest population.`,
         answer: `${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
-        rawData: provinces.map(p => p.name)
+        rawData: provinces.map(p => p.name),
+        type: "TOP_K_RANKING"
     })
 
     // 2
@@ -287,7 +307,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `List TOP 5 provinces with the highest population density.`,
         answer: `${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
-        rawData: provinces.map(p => p.name)
+        rawData: provinces.map(p => p.name),
+        type: "TOP_K_RANKING"
     })
 
     // 3
@@ -299,7 +320,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[]) {
     quizEntries.push({
         question: `List TOP 5 provinces with the lowest population density.`,
         answer: `${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
-        rawData: provinces.map(p => p.name)
+        rawData: provinces.map(p => p.name),
+        type: "TOP_K_RANKING"
     })
 
     return quizEntries;
