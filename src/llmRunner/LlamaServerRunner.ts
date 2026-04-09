@@ -93,3 +93,19 @@ export class LlamaServerRunner implements IManageableLLMRunner {
         return this.apiRunner.run(props);
     }
 }
+
+
+export class ManageableLLMRunnerWrapper implements IManageableLLMRunner {
+    private apiRunner: OpenApiApiRunner;
+
+    public constructor(private host: string) {
+        this.apiRunner = new OpenApiApiRunner(this.host)
+    }
+
+    public start() { return Promise.resolve() }
+    public stop() { return Promise.resolve() }
+
+    public async run(props: ILLMRunnerProps): Promise<ILLMRunnerOutput> {
+        return this.apiRunner.run(props);
+    }
+}
