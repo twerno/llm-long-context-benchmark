@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 export default {
@@ -11,6 +11,16 @@ export default {
     writeFile(dirPath: string, filename: string, message: string) {
         this.createDirectorySafe(dirPath);
         writeFileSync(path.join(dirPath, filename), message)
-    }
+    },
 
+    directoryExist(dirPath: string) {
+        const stats = statSync(dirPath);
+        if (stats && stats.isDirectory()) {
+            return true;
+        }
+        if (!stats) {
+            return false
+        }
+        throw new Error(`${dirPath} Exists, but is not a directory.`)
+    }
 }

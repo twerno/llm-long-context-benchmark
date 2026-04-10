@@ -2,7 +2,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
 import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
-import { BenchmarkConfig, BenchmarkConfigSchema, IOpenAICompatible, ILlamaRunnerSchema, IRunnerDefinition, TestConfig } from "./types";
+import { BenchmarkConfig, BenchmarkConfigSchema, IOpenAICompatible, ILlamaRunnerSchema, IRunnerDefinition, TestConfig } from "./configTypes";
+import { IBenchmarkTask } from "./IBenchmarkTask";
+import DatasetQuizBenchmarkTask from "../benchmarks/datasetTest/DatasetQuizBenchmarkTask";
+import FileUtils from "../utils/FileUtils";
 
 export interface OrchestratorOptions {
     configPath: string;
@@ -22,66 +25,71 @@ export class TestOrchestratorRunner {
 
         // 2. Setup root directory
         this.rootDir = this.options.testId || `benchmark_${new Date().toISOString().replace(/[:.]/g, "_")}`;
-        await fs.mkdir(this.rootDir, { recursive: true });
+        FileUtils.createDirectorySafe(this.rootDir);
 
         console.log(`Starting benchmark session: ${this.rootDir}`);
 
         // 3. Iterate through tests
         for (const testConfig of this.config.tests) {
-            await this.runTest(testConfig);
+            try {
+                await this.runTest(testConfig);
+            }
+            catch (err) {
+                console.error(err)
+            }
         }
     }
 
     private async runTest(testConfig: TestConfig): Promise<void> {
-        const testDir = path.join(this.rootDir, this.getTestName(testConfig));
+        const testName = this.getTestName(testConfig);
+        const testDir = path.join(this.rootDir, testName);
 
-        await fs.mkdir(testDir, { recursive: true });
-        console.log(`[START] Running test: ${this.getTestName(testConfig)}`);
+        FileUtils.createDirectorySafe(testDir);
+        console.log(`[START] Running test: ${testName}`);
 
         for (let i = 0; i < testConfig.repeats; i++) {
             const iterationId = `iteration_${i}`;
             const iterationDir = path.join(testDir, iterationId);
 
             // 4. Check for Resume/Checkpointing
-            try {
-                const stats = await fs.stat(iterationDir);
-                if (stats.isDirectory()) {
-                    console.log(`[SKIP] Test ${this.getTestName(testConfig)} already exists in ${iterationDir}. Skipping.`);
-                    return;
-                }
-            } catch (e) {
-                // Directory doesn't exist, proceed
+            if (FileUtils.directoryExist(iterationDir)) {
+                console.log(`[SKIP] Test ${testName} already exists in ${iterationDir}. Skipping.`);
+                continue;
             }
-
-            await fs.mkdir(iterationDir, { recursive: true });
+            FileUtils.createDirectorySafe(iterationDir);
+            const runId = `${testName}_${i + 1}`
+            const task: IBenchmarkTask = this.getBenchmarkTask(testConfig, runId, testDir, iterationDir)
 
             // --- BENCHMARK STEP ---
-            const benchmarkRunner = await this.getRunner(testConfig.benchmarkRunner);
+            const benchmarkLLMRunner = await this.getLLMRunner(testConfig.benchmarkRunner);
             try {
                 console.log(`  [Iteration ${i}] Running benchmark...`);
+                await task.run(benchmarkLLMRunner)
                 // TODO: Actual test execution logic (will need to map testType to actual test implementation)
                 // const result = await executeTestStep(testConfig, benchmarkRunner, iterationDir);
                 // await fs.writeFile(path.join(iterationDir, "benchmark_result.json"), JSON.stringify(result));
             } finally {
-                await this.cleanupRunner(benchmarkRunner);
+                await this.cleanupLLMRunner(benchmarkLLMRunner);
             }
 
             // --- EVALUATION STEP ---
-            const evalRunner = await this.getRunner(testConfig.evaluationRunner);
+            const evalRunner = await this.getLLMRunner(testConfig.evaluationRunner);
             try {
                 console.log(`  [Iteration ${i}] Running evaluation...`);
+                await task.run(evalRunner)
                 // TODO: Actual evaluation logic
                 // const evalResult = await executeEvalStep(testConfig, evalRunner, iterationDir);
                 // await fs.writeFile(path.join(iterationDir, "eval_result.json"), JSON.stringify(evalResult));
             } finally {
-                await this.cleanupRunner(evalRunner);
+                await this.cleanupLLMRunner(evalRunner);
             }
+            await task.saveEvaluationResults()
         }
 
         console.log(`[FINISH] Completed test: ${this.getTestName(testConfig)}`);
     }
 
-    private async getRunner(definition: IRunnerDefinition): Promise<IManageableLLMRunner> {
+    private async getLLMRunner(definition: IRunnerDefinition): Promise<IManageableLLMRunner> {
         // Resolve definition to actual runner instance
         let runnerSpec: IOpenAICompatible | ILlamaRunnerSchema;
 
@@ -111,7 +119,7 @@ export class TestOrchestratorRunner {
         throw new Error(`Unknown runner type: ${JSON.stringify(runnerSpec)}`);
     }
 
-    private async cleanupRunner(runner: IManageableLLMRunner): Promise<void> {
+    private async cleanupLLMRunner(runner: IManageableLLMRunner): Promise<void> {
         // Only stop if it's a manageable runner (like LlamaServerRunner)
         if (typeof runner.stop === "function") {
             await runner.stop();
@@ -119,6 +127,19 @@ export class TestOrchestratorRunner {
     }
 
     private getTestName(testConfig: TestConfig): string {
-        return `${testConfig.testType}_${new Date().getTime()}`; // Placeholder
+        return `${testConfig.testType}_${testConfig.name}`;
+    }
+
+    private getBenchmarkTask(testConfig: TestConfig, runId: string, testDir: string, iterationDir: string): IBenchmarkTask {
+        if (testConfig.testType === "dataset_quiz") {
+            return new DatasetQuizBenchmarkTask({
+                homeDir: testDir,
+                iterationDir,
+                runId,
+                quizParams: { datasetSize: 2, setsOfQuestions: 1 },
+                evaluationParams: { noOfEvaluationRepeats: 2 }
+            })
+        }
+        return null as any;
     }
 }

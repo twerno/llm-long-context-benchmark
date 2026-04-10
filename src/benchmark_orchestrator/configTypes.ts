@@ -48,6 +48,7 @@ export const TestTypeEnum = z.enum([
 ]);
 
 export const TestConfigSchema = z.object({
+    name: z.string(),
     testType: TestTypeEnum,
     params: z.record(z.any(), z.any()), // Parametry specyficzne dla testu (np. textLength)
     repeats: z.number().int().positive().default(1),

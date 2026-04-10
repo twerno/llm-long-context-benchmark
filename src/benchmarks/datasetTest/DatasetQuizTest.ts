@@ -86,7 +86,7 @@ interface IQuestionEvaluation {
     evaluationResults: boolean[],
     combinedEvaluation: boolean
 }
-interface IEvaluationResult {
+export interface IEvaluationResult {
     evaluatedQuestions: IQuestionEvaluation[],
     correct: number,
     total: number
