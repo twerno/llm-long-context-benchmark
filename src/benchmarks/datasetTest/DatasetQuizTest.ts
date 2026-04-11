@@ -34,6 +34,7 @@ async function getQuizData(options: IGenerateDataProps, benchmarkHomeDir: string
 
 export interface ILLMResponseToEvaluete {
     llmAnswer: string,
+    error?: any,
     quizEntry: IQuizEntry
 }
 
@@ -52,15 +53,20 @@ async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): 
     let resp: ILLMRunnerOutput | undefined
 
     for (let i = 0; i < quizData.quizEntries.length; i++) {
+
         console.log(`[Quiz="${quizData.quizId}"] [runId=${runId}] testing [${i + 1}/${quizData.quizEntries.length}].`)
 
         const quizEntry = quizData.quizEntries[i]
-
-        messages.push({ "role": "user", content: quizEntry.question })
-        resp = await llmRunner.run({ messages })
-        const llmAnswer = resp.output[0]
-        messages.push({ role: "assistant", content: llmAnswer })
-        responsesToEvaluate.push({ quizEntry, llmAnswer: llmAnswer })
+        try {
+            messages.push({ "role": "user", content: quizEntry.question })
+            resp = await llmRunner.run({ messages })
+            const llmAnswer = resp.output[0]
+            messages.push({ role: "assistant", content: llmAnswer })
+            responsesToEvaluate.push({ quizEntry, llmAnswer: llmAnswer })
+        } catch (err) {
+            console.error(err)
+            responsesToEvaluate.push({ quizEntry, llmAnswer: "ERROR", error: err })
+        }
     }
     console.log(`Total tokens usage: ${resp?.totalTokens}`)
 
@@ -77,10 +83,11 @@ interface IEvaluateProps {
     },
     llmRunner: ILLMRunner,
     responsesToEvaluate: ILLMResponseToEvaluete[],
-    repeatEvaluationNTimes: number
+    evaluationStepRuns: number
 }
 
 interface IQuestionEvaluation {
+    error?: any,
     quizEntry: IQuizEntry,
     llmAnswer: string,
     evaluationResults: boolean[],
@@ -96,9 +103,21 @@ async function evaluate(props: IEvaluateProps): Promise<IEvaluationResult> {
     const evaluatedQuestions: IQuestionEvaluation[] = []
     for (let i = 0; i < props.responsesToEvaluate.length; i++) {
         process.stdout.write(`[Quiz="${props.metadata.quizId}"] [runId=${props.metadata.runId}] Evaluating answer for question [${i + 1}/${props.responsesToEvaluate.length}]... `)
-        const result = await evaluateResponse(props.responsesToEvaluate[i], i, props);
-        evaluatedQuestions.push(result);
-        process.stdout.write(` - ${result.combinedEvaluation ? "OK" : "FAIL"}\n`)
+        const respToEvalueate = props.responsesToEvaluate[i];
+        try {
+            if (respToEvalueate.error) {
+                evaluatedQuestions.push({ ...respToEvalueate, combinedEvaluation: false, evaluationResults: [] });
+                continue;
+            }
+
+            const result = await evaluateResponse(props.responsesToEvaluate[i], i, props);
+
+            evaluatedQuestions.push(result);
+            process.stdout.write(` - ${result.combinedEvaluation ? "OK" : "FAIL"}\n`)
+        } catch (err) {
+            console.error(err)
+            evaluatedQuestions.push({ ...respToEvalueate, combinedEvaluation: false, evaluationResults: [], error: err });
+        }
     }
 
     const correct = evaluatedQuestions
@@ -111,7 +130,7 @@ async function evaluate(props: IEvaluateProps): Promise<IEvaluationResult> {
 }
 
 async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, responseIdx: number, props: IEvaluateProps): Promise<IQuestionEvaluation> {
-    const repeatEvaluationNTimes = Math.max(1, props.repeatEvaluationNTimes)
+    const repeatEvaluationNTimes = Math.max(1, props.evaluationStepRuns)
 
     const message = messageTemplate
         .replace("<QUESTION>", responseToEvaluate.quizEntry.question)

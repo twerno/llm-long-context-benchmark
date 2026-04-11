@@ -14,13 +14,17 @@ export default {
     },
 
     directoryExist(dirPath: string) {
-        const stats = statSync(dirPath);
-        if (stats && stats.isDirectory()) {
-            return true;
+        try {
+            const stats = statSync(dirPath);
+            if (stats && stats.isDirectory()) {
+                return true;
+            }
+            if (!stats) {
+                return false
+            }
+            throw new Error(`${dirPath} Exists, but is not a directory.`)
+        } catch (err) {
+            return false;
         }
-        if (!stats) {
-            return false
-        }
-        throw new Error(`${dirPath} Exists, but is not a directory.`)
     }
 }

@@ -12,11 +12,12 @@ export const OpenAICompatibleSchema = z.object({
 export type IOpenAICompatible = z.infer<typeof OpenAICompatibleSchema>
 
 export const LlamaRunnerSchema = z.object({
-    type: z.literal("llamarunner"),
+    type: z.literal("llamacpp"),
     executablePath: z.string(),
     modelPath: z.string(),
-    host: z.string().default("127.0.0.1"),
-    port: z.number().default(5000),
+    host: z.string().default("127.0.0.1").optional(),
+    port: z.number().default(5000).optional(),
+
     // Parametry modelu (można rozszerzyć w przyszłości)
     temperature: z.number().optional(),
     maxTokens: z.number().optional(),
@@ -26,13 +27,10 @@ export const LlamaRunnerSchema = z.object({
 
 export type ILlamaRunnerSchema = z.infer<typeof LlamaRunnerSchema>
 
-export const LMStudioRunnerSchemaWithId = OpenAICompatibleSchema.extend({ id: z.string() })
-export const LlamaRunnerSchemaWithId = LlamaRunnerSchema.extend({ id: z.string() })
-
 export const RunnerDefinitionSchema = z.union([
-    z.string(),                         // Odwołanie do globalnej listy
-    OpenAICompatibleSchema,               // Definicja inline LM Studio
-    LlamaRunnerSchema,                  // Definicja inline Llama
+    z.string(),              // Odwołanie do globalnej listy
+    OpenAICompatibleSchema,  // Definicja inline LM Studio
+    LlamaRunnerSchema,       // Definicja inline Llama
 ]);
 
 export type IRunnerDefinition = z.infer<typeof RunnerDefinitionSchema>;
@@ -47,23 +45,40 @@ export const TestTypeEnum = z.enum([
     "dataset_quiz"
 ]);
 
-export const TestConfigSchema = z.object({
-    name: z.string(),
-    testType: TestTypeEnum,
-    params: z.record(z.any(), z.any()), // Parametry specyficzne dla testu (np. textLength)
-    repeats: z.number().int().positive().default(1),
-    benchmarkRunner: RunnerDefinitionSchema,
-    evaluationRunner: RunnerDefinitionSchema,
+
+export const ZQuizTestParams = z.object({
+    datasetSetSize: z.number().positive(),
+    questionsSetSize: z.number().positive(),
+    evaluationStepRuns: z.number().positive()
+})
+
+export const QuizTestConfigSchema = z.object({
+    testType: z.literal("dataset_quiz"),
+
+    params: ZQuizTestParams
+})
+
+const TestConfigSchema = z.union([QuizTestConfigSchema])
+
+export const ITestConfigWraperSchema = z.object({
+    name: z.string().optional(),
+    benchmarkRunner: z.string(),
+    evaluationRunner: z.string(),
+    runs: z.number().int().positive().default(1),
+    test: z.string()
 });
+
 
 /**
  * Główny schemat konfiguracji całego benchmarku
  */
 
 export const BenchmarkConfigSchema = z.object({
-    global_llms: z.array(z.union([LMStudioRunnerSchemaWithId, LlamaRunnerSchemaWithId])),
-    tests: z.array(TestConfigSchema),
+    global_llms: z.record(z.string(), z.union([OpenAICompatibleSchema, LlamaRunnerSchema])),
+    global_test_definions: z.record(z.string(), TestConfigSchema),
+    tests: z.array(ITestConfigWraperSchema),
 });
 
-export type BenchmarkConfig = z.infer<typeof BenchmarkConfigSchema>;
-export type TestConfig = z.infer<typeof TestConfigSchema>;
+export type IBenchmarkConfig = z.infer<typeof BenchmarkConfigSchema>;
+export type ITestConfigWraperSchema = z.infer<typeof ITestConfigWraperSchema>;
+export type ITestConfigSchema = z.infer<typeof TestConfigSchema>

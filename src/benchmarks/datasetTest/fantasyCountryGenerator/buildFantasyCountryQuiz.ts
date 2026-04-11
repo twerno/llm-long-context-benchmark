@@ -151,8 +151,7 @@ function buildComplexQuestions(dataset: ICountrySchema[]) {
         .filter(p => p.crimeRates.find(c => c.type === criminalRate.type && c.rate <= criminalRate.rate))
 
     quizEntries.push({
-        question: `List all provinces that belong to a country with ${color} in its flag and has a criminal rate of ${criminalRate.type} less than or equal to
- ${criminalRate.rate}.`,
+        question: `List all provinces that belong to a country with ${color} in its flag and has a criminal rate of ${criminalRate.type} less than or equal to ${criminalRate.rate}.`,
         answer: `FACT: The provinces are: ${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "LOGICAL_FILTERING"

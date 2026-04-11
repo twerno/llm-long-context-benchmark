@@ -1,14 +1,17 @@
+import z from "zod";
 import { IBenchmarkTask } from "../../benchmark_orchestrator/IBenchmarkTask";
 import { ILLMRunner } from "../../llmRunner/ILLMRunner";
 import DatasetQuizTest, { IEvaluationResult, ILLMResponseToEvaluete } from "./DatasetQuizTest";
 import { IQuizData } from "./QuizDataUtils";
+import { ZQuizTestParams } from "../../benchmark_orchestrator/configTypes";
+
+
 
 export interface IDatasetQuizTestRunnerRunProps {
     runId: string,
     homeDir: string,
     iterationDir: string,
-    quizParams: Parameters<typeof DatasetQuizTest.getQuizData>[0],
-    evaluationParams: { noOfEvaluationRepeats: number },
+    params: z.infer<typeof ZQuizTestParams>
 }
 
 
@@ -24,7 +27,7 @@ export default class DatasetQuizBenchmarkTask implements IBenchmarkTask {
 
     public async run(llmRunner: ILLMRunner) {
         this.quizData = await DatasetQuizTest
-            .getQuizData(this.props.quizParams, this.props.homeDir)
+            .getQuizData({ datasetSize: this.props.params.datasetSetSize, setsOfQuestions: this.props.params.questionsSetSize }, this.props.homeDir)
 
         const runId = this.props.runId
         this.responsesToEvaluate = await DatasetQuizTest.execute({ runId, quizData: this.quizData, llmRunner, dirPath: this.props.iterationDir })
@@ -38,7 +41,7 @@ export default class DatasetQuizBenchmarkTask implements IBenchmarkTask {
 
         this.evaluationResult = await DatasetQuizTest.evaluate({
             metadata: { runId, quizId: this.quizData?.quizId, dirPath: this.props.iterationDir },
-            repeatEvaluationNTimes: this.props.evaluationParams.noOfEvaluationRepeats,
+            evaluationStepRuns: this.props.params.evaluationStepRuns,
             llmRunner,
             responsesToEvaluate: this.responsesToEvaluate,
         })
