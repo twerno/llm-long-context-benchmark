@@ -9,15 +9,6 @@ type ChatCompletionRequestSchema = {
     }>
 }
 
-const ErrorResponseSchema = z.object({
-    error: z.object({
-        message: z.string(),
-        type: z.string(),
-        param: z.string(),
-        code: z.string()
-    })
-});
-
 const ChatCompletionResponseSchema = z.object({
     id: z.string(),
     object: z.string(),
@@ -38,26 +29,10 @@ const ChatCompletionResponseSchema = z.object({
     })
 });
 
-export interface OpenApiApiRunnerProps {
-    model?: string
-    // top_p
-    // top_k
-    // messages
-    // temperature
-    // max_tokens
-    // stream
-    // stop
-    // presence_penalty
-    // frequency_penalty
-    // logit_bias
-    // repeat_penalty
-    // seed
-}
-
 export class OpenApiApiRunner implements ILLMRunner {
     private CHAT_PATH: string = "/v1/chat/completions";
 
-    public constructor(private host: string, private props?: OpenApiApiRunnerProps) {
+    public constructor(private host: string) {
     }
 
     public async run(props: ILLMRunnerProps): Promise<ILLMRunnerOutput> {
@@ -65,7 +40,6 @@ export class OpenApiApiRunner implements ILLMRunner {
         const { messages } = props;
 
         const request: ChatCompletionRequestSchema = {
-            ...this.props,
             messages
         }
 
@@ -75,16 +49,15 @@ export class OpenApiApiRunner implements ILLMRunner {
                 {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X_Session': Math.random().toString()
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(request)
                 });
             const end = performance.now();
 
             if (!response.ok) {
-                const errorData = ErrorResponseSchema.parse(await response.json());
-                throw new Error(`API Error: ${errorData.error.message}`);
+                const errorData = await response.text();
+                throw new Error(`API Error: ${errorData}`);
             }
 
             const data = ChatCompletionResponseSchema.parse(await response.json());

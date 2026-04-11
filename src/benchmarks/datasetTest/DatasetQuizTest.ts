@@ -63,14 +63,15 @@ async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): 
             const llmAnswer = resp.output[0]
             messages.push({ role: "assistant", content: llmAnswer })
             responsesToEvaluate.push({ quizEntry, llmAnswer: llmAnswer })
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
-            responsesToEvaluate.push({ quizEntry, llmAnswer: "ERROR", error: err })
+            responsesToEvaluate.push({ quizEntry, llmAnswer: "ERROR", error: JSON.stringify(err?.message ?? err) })
         }
     }
     console.log(`Total tokens usage: ${resp?.totalTokens}`)
 
     FileUtils.writeFile(dirPath, `messages.json`, JSON.stringify({ messages, totalTokens: resp?.totalTokens }, null, 2));
+    FileUtils.writeFile(dirPath, `responsesToEvaluate.json`, JSON.stringify(responsesToEvaluate, null, 2));
 
     return responsesToEvaluate;
 }
@@ -106,7 +107,13 @@ async function evaluate(props: IEvaluateProps): Promise<IEvaluationResult> {
         const respToEvalueate = props.responsesToEvaluate[i];
         try {
             if (respToEvalueate.error) {
+                FileUtils.writeFile(
+                    props.metadata.dirPath,
+                    `evaluation_${i + 1}_skipped.txt`,
+                    "Evaluation skilled due to previous errors"
+                );
                 evaluatedQuestions.push({ ...respToEvalueate, combinedEvaluation: false, evaluationResults: [] });
+                process.stdout.write(` - "SKIP"\n`)
                 continue;
             }
 

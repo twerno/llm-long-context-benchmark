@@ -1,13 +1,10 @@
 import { spawn, ChildProcess } from 'child_process';
 import type { ILLMRunnerProps, ILLMRunnerOutput, IManageableLLMRunner } from './ILLMRunner';
-import { OpenApiApiRunner, type OpenApiApiRunnerProps } from './APILLMRunner';
+import { OpenApiApiRunner } from './APILLMRunner';
+import { ILlamaRunnerSchema } from '../benchmark_orchestrator/configTypes';
 
-export interface LlamaServerRunnerProps extends OpenApiApiRunnerProps {
-    executablePath: string;
-    modelPath: string;
-    ctxSize?: number;
-    port?: number;
-    host?: string;
+export interface LlamaServerRunnerProps extends ILlamaRunnerSchema {
+
 }
 
 export class LlamaServerRunner implements IManageableLLMRunner {
@@ -17,7 +14,7 @@ export class LlamaServerRunner implements IManageableLLMRunner {
 
     public constructor(private props: LlamaServerRunnerProps) {
         this.host = `http://${props.host ?? '127.0.0.1'}:${props.port ?? 8080}`
-        this.apiRunner = new OpenApiApiRunner(this.host, this.props)
+        this.apiRunner = new OpenApiApiRunner(this.host)
     }
 
     public async start(): Promise<void> {
@@ -29,6 +26,9 @@ export class LlamaServerRunner implements IManageableLLMRunner {
             '--model', this.props.modelPath,
             '--port', (this.props.port ?? 8080).toString(),
             '--host', this.props.host ?? '127.0.0.1',
+            '--parallel', "1",
+            '--no-kv-unified',
+            ...(this.props.extraFlags ?? [])
         ];
 
         if (this.props.ctxSize !== undefined) {
@@ -37,7 +37,7 @@ export class LlamaServerRunner implements IManageableLLMRunner {
 
         console.log(`Starting llama - server with args: ${args.join(' ')} `);
 
-        this.serverProcess = spawn(this.props.executablePath, args, { detached: true });
+        this.serverProcess = spawn(this.props.executablePath, args, { detached: false });
 
         this.serverProcess.on('error', (err) => {
             console.error('Failed to start llama-server:', err);
@@ -82,9 +82,7 @@ export class LlamaServerRunner implements IManageableLLMRunner {
             this.serverProcess?.kill('SIGINT');
             // If SIGINT doesn't work, try SIGTERM or force kill
             setTimeout(() => {
-                if (this.serverProcess) {
-                    this.serverProcess.kill('SIGKILL');
-                }
+                this.serverProcess?.kill('SIGKILL');
             }, 2000);
         });
     }

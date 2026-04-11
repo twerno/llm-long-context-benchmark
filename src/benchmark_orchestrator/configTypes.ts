@@ -20,9 +20,10 @@ export const LlamaRunnerSchema = z.object({
 
     // Parametry modelu (można rozszerzyć w przyszłości)
     temperature: z.number().optional(),
-    maxTokens: z.number().optional(),
     topK: z.number().optional(),
     topP: z.number().optional(),
+    ctxSize: z.number().nonnegative().optional(),
+    extraFlags: z.array(z.string()).optional()
 });
 
 export type ILlamaRunnerSchema = z.infer<typeof LlamaRunnerSchema>
@@ -72,9 +73,10 @@ export const ITestConfigWraperSchema = z.object({
 /**
  * Główny schemat konfiguracji całego benchmarku
  */
+const ZSpec = z.union([OpenAICompatibleSchema, LlamaRunnerSchema])
 
 export const BenchmarkConfigSchema = z.object({
-    global_llms: z.record(z.string(), z.union([OpenAICompatibleSchema, LlamaRunnerSchema])),
+    global_llms: z.record(z.string(), ZSpec),
     global_test_definions: z.record(z.string(), TestConfigSchema),
     tests: z.array(ITestConfigWraperSchema),
 });
@@ -82,3 +84,4 @@ export const BenchmarkConfigSchema = z.object({
 export type IBenchmarkConfig = z.infer<typeof BenchmarkConfigSchema>;
 export type ITestConfigWraperSchema = z.infer<typeof ITestConfigWraperSchema>;
 export type ITestConfigSchema = z.infer<typeof TestConfigSchema>
+export type ISpec = z.infer<typeof ZSpec>

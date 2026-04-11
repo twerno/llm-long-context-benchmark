@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
 import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
-import { IBenchmarkConfig, BenchmarkConfigSchema, ITestConfigWraperSchema, ITestConfigSchema } from "./configTypes";
+import { IBenchmarkConfig, BenchmarkConfigSchema, ITestConfigWraperSchema, ITestConfigSchema, ISpec } from "./configTypes";
 import { IBenchmarkTask } from "./IBenchmarkTask";
 import DatasetQuizBenchmarkTask from "../benchmarks/datasetTest/DatasetQuizBenchmarkTask";
 import FileUtils from "../utils/FileUtils";
@@ -24,7 +24,7 @@ export class TestOrchestratorRunner {
         this.config = BenchmarkConfigSchema.parse(JSON.parse(configFileContent));
 
         // 2. Setup root directory
-        this.rootDir = path.join("benchmark", this.options.testId || `${new Date().toISOString().replace(/[:.]/g, "_")}`);
+        this.rootDir = path.join("tmp", this.options.testId || `${new Date().toISOString().replace(/[:.]/g, "_")}`);
         FileUtils.createDirectorySafe(this.rootDir);
 
         console.log(`Starting benchmark session: ${this.rootDir}`);
@@ -77,7 +77,7 @@ export class TestOrchestratorRunner {
                 const evalRunner = await this.getLLMRunner(testConfigWraper.evaluationRunner);
                 try {
                     console.log(`  [${iterationId}] Running evaluation...`);
-                    await task.run(evalRunner)
+                    await task.evaluate(evalRunner)
                     // await fs.writeFile(path.join(iterationDir, "eval_result.json"), JSON.stringify(evalResult));
                 } finally {
                     await this.cleanupLLMRunner(evalRunner);
@@ -101,12 +101,7 @@ export class TestOrchestratorRunner {
 
         // Instantiate runner based on type
         if (runnerSpec.type === "llamacpp") {
-            const runner = new LlamaServerRunner({
-                executablePath: runnerSpec.executablePath,
-                modelPath: runnerSpec.modelPath,
-                host: runnerSpec.host,
-                port: runnerSpec.port,
-            });
+            const runner = new LlamaServerRunner(runnerSpec);
             await runner.start();
             return runner;
         } else if (runnerSpec.type === "openAICompatible") {

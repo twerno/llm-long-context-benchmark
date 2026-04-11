@@ -1,0 +1,65 @@
+{
+    "global_llms": {
+        "evaluator": {
+            "type": "llamacpp",
+            "executablePath": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "modelPath": "D:\\modele AI\\LM Studio\\bartowski\\gemma-4-26b-a4b-it-gguf\\google_gemma-4-26B-A4B-it-Q4_K_S.gguf",
+            "extraFlags": [
+                "--no-cache-prompt",
+                "--cache-ram",
+                "0",
+                "--gpu-layers",
+                "all",
+                "--no-mmap",
+                "--direct-io"
+            ],
+            "ctxSize": 4096
+        },
+        "Bielik-4.5B-v3.0-Instruct.Q8_0": {
+            "type": "llamacpp",
+            "executablePath": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "modelPath": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-4.5B-v3.0-Instruct-GGUF\\Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
+            "ctxSize": 0
+        },
+        "Bielik-11B-v3.0-Instruct.Q4_K_M": {
+            "type": "llamacpp",
+            "executablePath": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "modelPath": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-11B-v3.0-Instruct-GGUF\\Bielik-11B-v3.0-Instruct.Q4_K_M.gguf",
+            "ctxSize": 0
+        }
+    },
+    "global_test_definions": {
+        "quiz_size_2_2": {
+            "testType": "dataset_quiz",
+            "params": {
+                "datasetSetSize": 2,
+                "evaluationStepRuns": 2,
+                "questionsSetSize": 2
+            }
+        },
+        "quiz_size_1_1": {
+            "testType": "dataset_quiz",
+            "params": {
+                "datasetSetSize": 1,
+                "evaluationStepRuns": 1,
+                "questionsSetSize": 1
+            }
+        }
+    },
+    "tests": [
+        {
+            "benchmarkRunner": "Bielik-4.5B-v3.0-Instruct.Q8_0",
+            "evaluationRunner": "evaluator",
+            "runs": 1,
+            "test": "quiz_size_1_1",
+            "name": "Bielik-4.5B_quiz_size_1_1"
+        },
+        {
+            "benchmarkRunner": "Bielik-11B-v3.0-Instruct.Q4_K_M",
+            "evaluationRunner": "evaluator",
+            "runs": 2,
+            "test": "quiz_size_2_2",
+            "name": "Bielik-11B_quiz_size_2_2"
+        }
+    ]
+}
