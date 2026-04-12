@@ -48,7 +48,7 @@ interface IExecureProps {
 async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): Promise<ILLMResponseToEvaluete[]> {
     const responsesToEvaluate: ILLMResponseToEvaluete[] = []
     console.log(`[Quiz="${quizData.quizId}"] [runId=${runId}] starting with dataset size=${quizData.dataset.length}.`)
-    const messages: ILLMRunnerProps["messages"] = [{ role: "user", content: quizData.datasetPrompt }]
+    const systemMessage: ILLMRunnerProps["messages"][number] = { role: "system", content: quizData.datasetPrompt }
 
     let resp: ILLMRunnerOutput | undefined
 
@@ -58,20 +58,22 @@ async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): 
 
         const quizEntry = quizData.quizEntries[i]
         try {
-            messages.push({ "role": "user", content: quizEntry.question })
-            resp = await llmRunner.run({ messages })
+            const requestBody: Parameters<typeof llmRunner.run>[0] = {
+                messages: [
+                    systemMessage,
+                    { "role": "user", content: quizEntry.question }
+                ]
+            }
+            resp = await llmRunner.run(requestBody)
             const llmAnswer = resp.output[0]
-            messages.push({ role: "assistant", content: llmAnswer })
+            FileUtils.writeFile(dirPath, `question_${i}.json`, JSON.stringify({ quizEntry, llmAnswer, tokens: resp.totalTokens }, null, 2));
+
             responsesToEvaluate.push({ quizEntry, llmAnswer: llmAnswer })
         } catch (err: any) {
             console.error(err)
             responsesToEvaluate.push({ quizEntry, llmAnswer: "ERROR", error: JSON.stringify(err?.message ?? err) })
         }
     }
-    console.log(`Total tokens usage: ${resp?.totalTokens}`)
-
-    FileUtils.writeFile(dirPath, `messages.json`, JSON.stringify({ messages, totalTokens: resp?.totalTokens }, null, 2));
-    FileUtils.writeFile(dirPath, `responsesToEvaluate.json`, JSON.stringify(responsesToEvaluate, null, 2));
 
     return responsesToEvaluate;
 }
