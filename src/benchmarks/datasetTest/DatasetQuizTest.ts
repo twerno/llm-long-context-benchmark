@@ -165,7 +165,7 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
 
         FileUtils.writeFile(
             props.metadata.dirPath,
-            `evaluation_${responseIdx + 1}__${i + 1}.txt`,
+            `evaluation_${responseIdx}__attempt_${i + 1}.txt`,
             message + "\n\n ================================= \n" + resp.output[0]
         );
     }

@@ -42,7 +42,8 @@ export class TestOrchestratorRunner {
 
     private async runTest(testConfigWrapper: ITestConfigWrapperSchema): Promise<void> {
         const testName = this.getTestName(testConfigWrapper);
-        const testDir = path.join(this.rootDir, testName);
+        const testHomeDir = path.join(this.rootDir, testConfigWrapper.test);
+        const testDir = path.join(this.rootDir, testConfigWrapper.test, testName);
 
         FileUtils.createDirectorySafe(testDir);
         console.log(`[START] Running test: ${testName}`);
@@ -61,7 +62,7 @@ export class TestOrchestratorRunner {
             FileUtils.createDirectorySafe(iterationDir);
             const runId = `${testName}_${iterationId}`
             try {
-                const task: IBenchmarkTask = this.getBenchmarkTask(testConfig, runId, testDir, iterationDir)
+                const task: IBenchmarkTask = this.getBenchmarkTask(testConfig, runId, testHomeDir, iterationDir)
 
                 // --- BENCHMARK STEP ---
                 const benchmarkLLMRunner = await this.getLLMRunner(testConfigWrapper.benchmark_llm);
