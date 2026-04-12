@@ -1,0 +1,4 @@
+- config.json - sprawdzenie unikatowości nazwy testu
+- config.json - jesli brak nazwy testu - zapewnić generowanie unikatowej nazwy
+- dopisać taski dla pozostałych testów
+- zapis zagregowanych wyników
