@@ -26,5 +26,27 @@ export default {
         } catch (err) {
             return false;
         }
+    },
+
+    saveAsCsv(dirPath: string, filename: string, rows: object[]) {
+        if (rows.length == 0) {
+            this.writeFile(dirPath, filename, "")
+            return;
+        }
+
+        const csvRows = rows
+            .map(record => Object.values(record)
+                .map(v => JSON.stringify(v))
+                .map(v => v && v.replace(/;/g, "_"))
+                .join(";")
+            )
+
+        const headerRow = Object.keys(rows[0])
+            .map(header => JSON.stringify(header))
+            .map(v => v && v.replace(/;/g, "_"))
+            .join(";");
+
+        const body = headerRow + "\n" + csvRows.join("\n")
+        this.writeFile(dirPath, filename, body)
     }
 }

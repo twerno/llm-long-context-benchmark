@@ -15,10 +15,13 @@ export interface OrchestratorOptions {
 export class TestOrchestratorRunner {
     private config!: IBenchmarkConfig;
     private rootDir!: string;
+    private runResultContainer: IBeanchmarkResultContainer[] = []
 
     constructor(private options: OrchestratorOptions) { }
 
     async run(): Promise<void> {
+        this.runResultContainer = []
+
         // 1. Load and validate config
         const configFileContent = await fs.readFile(this.options.configPath, "utf-8");
         this.config = BenchmarkConfigSchema.parse(JSON.parse(configFileContent));
@@ -38,6 +41,15 @@ export class TestOrchestratorRunner {
                 console.error(err)
             }
         }
+
+        // --- PERSIST EVALUATION RESULTS ---
+        const resultsCombinedByType = this.runResultContainer
+            .reduce((prev, curr) => ({
+                ...prev,
+                [curr.test_type]: [...(prev[curr.test_type] ?? []), ...curr.results]
+            }), {} as Record<string, IBenchmarkResult[]>)
+        Object.entries(resultsCombinedByType)
+            .forEach(([key, val]) => FileUtils.saveAsCsv(this.rootDir, `${key}.csv`, val));
     }
 
     private async runTest(testConfigWrapper: ITestConfigWrapperSchema): Promise<void> {
@@ -69,7 +81,6 @@ export class TestOrchestratorRunner {
                 try {
                     console.log(`  [${iterationId}] Running benchmark...`);
                     await task.run(benchmarkLLMRunner)
-                    // await fs.writeFile(path.join(iterationDir, "benchmark_result.json"), JSON.stringify(result));
                 } finally {
                     await this.cleanupLLMRunner(benchmarkLLMRunner);
                 }
@@ -79,19 +90,26 @@ export class TestOrchestratorRunner {
                 try {
                     console.log(`  [${iterationId}] Running evaluation...`);
                     await task.evaluate(evalRunner)
-                    // await fs.writeFile(path.join(iterationDir, "eval_result.json"), JSON.stringify(evalResult));
                 } finally {
                     await this.cleanupLLMRunner(evalRunner);
                 }
-                const taskResults = await task.getEvaluationResults()
-                this.saveResults(testConfigWrapper, iterationDir, runId, taskResults, undefined);
+
+                // --- PERSIST EVALUATION RESULTS ---
+                const evaluationResults = await task.getEvaluationResults()
+                const runResults = this.saveResults(testConfigWrapper, iterationDir, runId, evaluationResults, undefined);
+                this.runResultContainer.push(runResults);
             } catch (err) {
                 console.error(err)
-                this.saveResults(testConfigWrapper, iterationDir, runId, undefined, err);
+                const runResults = this.saveResults(testConfigWrapper, iterationDir, runId, undefined, err);
+                this.runResultContainer.push(runResults);
                 FileUtils.writeFile(iterationDir, "error.txt", `error\n` + JSON.stringify(err, null, 2))
             }
         }
 
+        const combinedResults = this.runResultContainer
+            .filter(v => v.test_name === testName && v.test_type === testConfigWrapper.test)
+            .reduce((prev, curr) => [...prev, ...curr.results], [] as IBenchmarkResult[])
+        FileUtils.saveAsCsv(testHomeDir, `results.csv`, combinedResults);
         console.log(`[FINISH] Completed test: ${this.getTestName(testConfigWrapper)}`);
     }
 
@@ -122,7 +140,12 @@ export class TestOrchestratorRunner {
     }
 
     private getTestName(testConfig: ITestConfigWrapperSchema): string {
-        return testConfig.name ?? `${testConfig.benchmark_llm}__${testConfig.test}`
+        const testName = testConfig.name ?? `${testConfig.benchmark_llm}__${testConfig.test}__${testConfig.runs}`
+        if (!this.runResultContainer.find(v => v.test_name === testName && v.test_type === testConfig.test)) {
+            return testName;
+        }
+
+        return `${testName}_${new Date().toISOString().replace(/[:.]/g, "_")}`
     }
 
     private getTestConfig(testConfigWrapper: ITestConfigWrapperSchema): ITestConfigSchema {
@@ -144,40 +167,46 @@ export class TestOrchestratorRunner {
         throw new Error(`unknown benchmarkType "${testConfig.benchmark_type}"`)
     }
 
-    private saveResults(testConfigWrapper: ITestConfigWrapperSchema, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined) {
+    private saveResults(testConfigWrapper: ITestConfigWrapperSchema, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined): IBeanchmarkResultContainer {
 
-        const testMetadata = {
+        const testMetadata: IBenchmarkResult = {
             benchmark_lmm: testConfigWrapper.benchmark_llm,
             evaluation_lmm: testConfigWrapper.evaluation_llm,
             test_type: testConfigWrapper.test,
             test_name: this.getTestName(testConfigWrapper),
             runId,
             iteration: 1,
-            run_error: run_error,
+            run_error,
         }
 
-        const safeTaskResults = !taskResults || (taskResults?.length == 0)
+        const safeTaskResults = !taskResults || (taskResults.length == 0)
             ? [testMetadata]
             : taskResults.map(record => ({ ...testMetadata, ...record }));
 
-        try {
-            const csvRows = safeTaskResults
-                .map(record => Object.values(record)
-                    .map(v => JSON.stringify(v))
-                    .map(v => v && v.replace(/;/g, "_"))
-                    .join(";")
-                )
+        FileUtils.saveAsCsv(iterationDir, `results.csv`, safeTaskResults);
 
-            const headers = Object.keys(safeTaskResults[0])
-                .map(header => JSON.stringify(header))
-                .map(v => v && v.replace(/;/g, "_"))
-                .join(";")
-
-            const body = headers + "\n" + csvRows.join("\n")
-            FileUtils.writeFile(iterationDir, `results.csv`, body)
-        } catch (err) {
-            console.log(err)
-        }
-
+        return {
+            test_name: testMetadata.test_name,
+            test_type: testMetadata.test_type,
+            error: run_error,
+            results: safeTaskResults
+        };
     }
+}
+
+interface IBeanchmarkResultContainer {
+    test_type: string,
+    test_name: string,
+    error?: unknown,
+    results: IBenchmarkResult[]
+}
+
+interface IBenchmarkResult {
+    benchmark_lmm: string,
+    evaluation_lmm: string,
+    test_type: string,
+    test_name: string,
+    runId: string,
+    iteration: number,
+    run_error?: unknown,
 }
