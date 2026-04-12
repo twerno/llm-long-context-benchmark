@@ -6,5 +6,5 @@ export interface IBenchmarkTask {
 
     evaluate(llmRunner: ILLMRunner): Promise<void>
 
-    saveEvaluationResults(): Promise<void>
+    getEvaluationResults(): Promise<{}[]>
 }

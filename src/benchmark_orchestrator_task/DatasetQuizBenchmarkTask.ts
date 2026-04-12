@@ -1,11 +1,10 @@
-import z from "zod";
-import { IBenchmarkTask } from "../../benchmark_orchestrator/IBenchmarkTask";
-import { ILLMRunner } from "../../llmRunner/ILLMRunner";
-import DatasetQuizTest, { IEvaluationResult, ILLMResponseToEvaluete } from "./DatasetQuizTest";
-import { IQuizData } from "./QuizDataUtils";
-import { ZQuizTestParams } from "../../benchmark_orchestrator/configTypes";
-import FileUtils from "../../utils/FileUtils";
 import path from "node:path";
+import z from "zod";
+import { ZQuizTestParams } from "../benchmark_orchestrator/configTypes";
+import { IBenchmarkTask } from "../benchmark_orchestrator/IBenchmarkTask";
+import DatasetQuizTest, { IEvaluationResult, ILLMResponseToEvaluete } from "../benchmarks/datasetTest/DatasetQuizTest";
+import { IQuizData } from "../benchmarks/datasetTest/QuizDataUtils";
+import { ILLMRunner } from "../llmRunner/ILLMRunner";
 
 
 export interface IDatasetQuizTestRunnerRunProps {
@@ -48,30 +47,39 @@ export default class DatasetQuizBenchmarkTask implements IBenchmarkTask {
         })
     }
 
-    public async saveEvaluationResults() {
-        if (!this.evaluationResult) throw new Error("evaluationResult is NULL")
+    public async getEvaluationResults() {
+        if (!this.evaluationResult)
+            return []
 
-        const csv: string[] = [
-            "idx;type;combinedEvaluation;evaluationResults;error"
-        ]
+        const results: IResultCSVSchema[] = []
 
         for (let i = 0; i < this.evaluationResult.evaluatedQuestions.length; i++) {
-            const row: string[] = []
             const q = this.evaluationResult.evaluatedQuestions[i];
-            row.push(i.toString())
-            row.push(q.quizEntry.type);
-            row.push(q.combinedEvaluation ? "1" : "0")
-            row.push(`[${q.evaluationResults.map(v => v ? 1 : 0).join(",")}]`)
-
-            const error = (q.error && JSON.stringify(q.error.message ?? q.error).replace(/[;]/g, "_").slice(1, -1)) || ""
-            row.push(error)
-
-            csv.push(`"` + row.join(`";"`) + `"`)
+            results.push({
+                question_idx: i,
+                question_set_no: q.quizEntry.questionSetNo,
+                question_no_in_set: q.quizEntry.questionNo,
+                question_type: q.quizEntry.type,
+                evaluation_success: q.combinedEvaluation ? 1 : 0,
+                successfull_evaluations: q.evaluationResults.reduce((prev, curr) => prev + (curr ? 1 : 0), 0),
+                evaluation_steps_no: q.evaluationResults.length,
+                error: (q.error && JSON.stringify(q.error.message ?? q.error).replace(/[;]/g, "_").slice(1, -1)) || "",
+            })
         }
-        const body = csv.join("\n")
-        FileUtils.writeFile(this.props.iterationDir, `results.csv`, body)
-
-        console.log(`[${this.evaluationResult.correct}/${this.evaluationResult.total}]`);
+        return results;
     }
+
+}
+
+interface IResultCSVSchema {
+    question_idx: number,
+    question_set_no: number,
+    question_no_in_set: number,
+    question_type: string,
+    evaluation_success: 1 | 0,
+    evaluation_steps_no: number,
+    successfull_evaluations: number,
+    error: string
+
 
 }

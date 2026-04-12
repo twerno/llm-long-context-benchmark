@@ -23,21 +23,21 @@ export class LlamaServerRunner implements IManageableLLMRunner {
         }
 
         const args = [
-            '--model', this.props.modelPath,
+            '--model', this.props.model_path,
             '--port', (this.props.port ?? 8080).toString(),
             '--host', this.props.host ?? '127.0.0.1',
             '--parallel', "1",
             '--no-kv-unified',
-            ...(this.props.extraFlags ?? [])
+            ...(this.props.extra_flags ?? [])
         ];
 
-        if (this.props.ctxSize !== undefined) {
-            args.push('--ctx-size', this.props.ctxSize.toString());
+        if (this.props.ctx_size !== undefined) {
+            args.push('--ctx-size', this.props.ctx_size.toString());
         }
 
         console.log(`Starting llama - server with args: ${args.join(' ')} `);
 
-        this.serverProcess = spawn(this.props.executablePath, args, { detached: false });
+        this.serverProcess = spawn(this.props.executable_path, args, { detached: false });
 
         this.serverProcess.on('error', (err) => {
             console.error('Failed to start llama-server:', err);

@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import DatasetQuizBenchmarkTask from "../benchmark_orchestrator_task/DatasetQuizBenchmarkTask";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
 import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
-import { IBenchmarkConfig, BenchmarkConfigSchema, ITestConfigWraperSchema, ITestConfigSchema, ISpec } from "./configTypes";
-import { IBenchmarkTask } from "./IBenchmarkTask";
-import DatasetQuizBenchmarkTask from "../benchmarks/datasetTest/DatasetQuizBenchmarkTask";
 import FileUtils from "../utils/FileUtils";
+import { BenchmarkConfigSchema, IBenchmarkConfig, ITestConfigSchema, ITestConfigWrapperSchema } from "./configTypes";
+import { IBenchmarkTask } from "./IBenchmarkTask";
 
 export interface OrchestratorOptions {
     configPath: string;
@@ -40,31 +40,31 @@ export class TestOrchestratorRunner {
         }
     }
 
-    private async runTest(testConfigWraper: ITestConfigWraperSchema): Promise<void> {
-        const testName = this.getTestName(testConfigWraper);
+    private async runTest(testConfigWrapper: ITestConfigWrapperSchema): Promise<void> {
+        const testName = this.getTestName(testConfigWrapper);
         const testDir = path.join(this.rootDir, testName);
 
         FileUtils.createDirectorySafe(testDir);
         console.log(`[START] Running test: ${testName}`);
 
-        const testConfig = this.getTestConfig(testConfigWraper);
+        const testConfig = this.getTestConfig(testConfigWrapper);
 
-        for (let i = 0; i < testConfigWraper.runs; i++) {
+        for (let i = 0; i < testConfigWrapper.runs; i++) {
             const iterationId = `iteration_${i + 1}`;
             const iterationDir = path.join(testDir, iterationId);
-            try {
 
-                // 4. Check for Resume/Checkpointing
-                if (FileUtils.directoryExist(iterationDir)) {
-                    console.log(`[SKIP] Test ${testName} already exists in ${iterationDir}. Skipping.`);
-                    continue;
-                }
-                FileUtils.createDirectorySafe(iterationDir);
-                const runId = `${testName}_${iterationId}`
+            // 4. Check for Resume/Checkpointing
+            if (FileUtils.directoryExist(iterationDir)) {
+                console.log(`[SKIP] Test ${testName} already exists in ${iterationDir}. Skipping.`);
+                continue;
+            }
+            FileUtils.createDirectorySafe(iterationDir);
+            const runId = `${testName}_${iterationId}`
+            try {
                 const task: IBenchmarkTask = this.getBenchmarkTask(testConfig, runId, testDir, iterationDir)
 
                 // --- BENCHMARK STEP ---
-                const benchmarkLLMRunner = await this.getLLMRunner(testConfigWraper.benchmarkRunner);
+                const benchmarkLLMRunner = await this.getLLMRunner(testConfigWrapper.benchmark_llm);
                 try {
                     console.log(`  [${iterationId}] Running benchmark...`);
                     await task.run(benchmarkLLMRunner)
@@ -74,7 +74,7 @@ export class TestOrchestratorRunner {
                 }
 
                 // --- EVALUATION STEP ---
-                const evalRunner = await this.getLLMRunner(testConfigWraper.evaluationRunner);
+                const evalRunner = await this.getLLMRunner(testConfigWrapper.evaluation_llm);
                 try {
                     console.log(`  [${iterationId}] Running evaluation...`);
                     await task.evaluate(evalRunner)
@@ -82,14 +82,16 @@ export class TestOrchestratorRunner {
                 } finally {
                     await this.cleanupLLMRunner(evalRunner);
                 }
-                await task.saveEvaluationResults()
+                const taskResults = await task.getEvaluationResults()
+                this.saveResults(testConfigWrapper, iterationDir, runId, taskResults, undefined);
             } catch (err) {
                 console.error(err)
+                this.saveResults(testConfigWrapper, iterationDir, runId, undefined, err);
                 FileUtils.writeFile(iterationDir, "error.txt", `error\n` + JSON.stringify(err, null, 2))
             }
         }
 
-        console.log(`[FINISH] Completed test: ${this.getTestName(testConfigWraper)}`);
+        console.log(`[FINISH] Completed test: ${this.getTestName(testConfigWrapper)}`);
     }
 
     private async getLLMRunner(definition: string): Promise<IManageableLLMRunner> {
@@ -118,19 +120,19 @@ export class TestOrchestratorRunner {
         }
     }
 
-    private getTestName(testConfig: ITestConfigWraperSchema): string {
-        return testConfig.name ?? `${testConfig.benchmarkRunner}__${testConfig.test}`
+    private getTestName(testConfig: ITestConfigWrapperSchema): string {
+        return testConfig.name ?? `${testConfig.benchmark_llm}__${testConfig.test}`
     }
 
-    private getTestConfig(testConfigWraper: ITestConfigWraperSchema): ITestConfigSchema {
-        const testConfig = this.config.global_test_definions[testConfigWraper.test];
+    private getTestConfig(testConfigWrapper: ITestConfigWrapperSchema): ITestConfigSchema {
+        const testConfig = this.config.global_test_definitions[testConfigWrapper.test];
         if (!testConfig)
-            throw new Error(`Unknown testId: ${JSON.stringify(testConfigWraper.test)}`);
+            throw new Error(`Unknown testId: ${JSON.stringify(testConfigWrapper.test)}`);
         return testConfig;
     }
 
     private getBenchmarkTask(testConfig: ITestConfigSchema, runId: string, testDir: string, iterationDir: string): IBenchmarkTask {
-        if (testConfig.testType === "dataset_quiz") {
+        if (testConfig.benchmark_type === "dataset_quiz") {
             return new DatasetQuizBenchmarkTask({
                 homeDir: testDir,
                 iterationDir,
@@ -138,6 +140,43 @@ export class TestOrchestratorRunner {
                 params: testConfig.params
             })
         }
-        return null as any;
+        throw new Error(`unknown benchmarkType "${testConfig.benchmark_type}"`)
+    }
+
+    private saveResults(testConfigWrapper: ITestConfigWrapperSchema, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined) {
+
+        const testMetadata = {
+            benchmark_lmm: testConfigWrapper.benchmark_llm,
+            evaluation_lmm: testConfigWrapper.evaluation_llm,
+            test_type: testConfigWrapper.test,
+            test_name: this.getTestName(testConfigWrapper),
+            runId,
+            iteration: 1,
+            run_error: run_error,
+        }
+
+        const safeTaskResults = !taskResults || (taskResults?.length == 0)
+            ? [testMetadata]
+            : taskResults.map(record => ({ ...testMetadata, ...record }));
+
+        try {
+            const csvRows = safeTaskResults
+                .map(record => Object.values(record)
+                    .map(v => JSON.stringify(v))
+                    .map(v => v && v.replace(/;/g, "_"))
+                    .join(";")
+                )
+
+            const headers = Object.keys(safeTaskResults[0])
+                .map(header => JSON.stringify(header))
+                .map(v => v && v.replace(/;/g, "_"))
+                .join(";")
+
+            const body = headers + "\n" + csvRows.join("\n")
+            FileUtils.writeFile(iterationDir, `results.csv`, body)
+        } catch (err) {
+            console.log(err)
+        }
+
     }
 }

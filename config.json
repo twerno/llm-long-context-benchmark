@@ -2,9 +2,9 @@
     "global_llms": {
         "evaluator": {
             "type": "llamacpp",
-            "executablePath": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "modelPath": "D:\\modele AI\\LM Studio\\bartowski\\gemma-4-26b-a4b-it-gguf\\google_gemma-4-26B-A4B-it-Q4_K_S.gguf",
-            "extraFlags": [
+            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "model_path": "D:\\modele AI\\LM Studio\\bartowski\\gemma-4-26b-a4b-it-gguf\\google_gemma-4-26B-A4B-it-Q4_K_S.gguf",
+            "extra_flags": [
                 "--no-cache-prompt",
                 "--cache-ram",
                 "0",
@@ -13,24 +13,51 @@
                 "--no-mmap",
                 "--direct-io"
             ],
-            "ctxSize": 4096
+            "ctx_size": 4096
+        },
+        "evaluator_quick": {
+            "type": "llamacpp",
+            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "model_path": "D:\\modele AI\\LM Studio\\lmstudio-community\\Qwen3-4B-Instruct-2507-GGUF\\Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+            "extra_flags": [
+                "--no-cache-prompt",
+                "--cache-ram",
+                "0",
+                "--gpu-layers",
+                "all",
+                "--no-mmap",
+                "--direct-io"
+            ],
+            "ctx_size": 4096
         },
         "Bielik-4.5B-v3.0-Instruct.Q8_0": {
             "type": "llamacpp",
-            "executablePath": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "modelPath": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-4.5B-v3.0-Instruct-GGUF\\Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
-            "ctxSize": 0
+            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "model_path": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-4.5B-v3.0-Instruct-GGUF\\Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
+            "ctx_size": 0
         },
         "Bielik-11B-v3.0-Instruct.Q4_K_M": {
             "type": "llamacpp",
-            "executablePath": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "modelPath": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-11B-v3.0-Instruct-GGUF\\Bielik-11B-v3.0-Instruct.Q4_K_M.gguf",
-            "ctxSize": 0
+            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "model_path": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-11B-v3.0-Instruct-GGUF\\Bielik-11B-v3.0-Instruct.Q4_K_M.gguf",
+            "ctx_size": 0
+        },
+        "Ministral-3-3B-Instruct-2512-Q4_K_M": {
+            "type": "llamacpp",
+            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "model_path": "D:\\modele AI\\LM Studio\\lmstudio-community\\Ministral-3-3B-Instruct-2512-GGUF\\Ministral-3-3B-Instruct-2512-Q4_K_M.gguf",
+            "ctx_size": 12288
+        },
+        "Qwen3-4B-Instruct-2507-Q4_K_M": {
+            "type": "llamacpp",
+            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
+            "model_path": "D:\\modele AI\\LM Studio\\lmstudio-community\\Qwen3-4B-Instruct-2507-GGUF\\Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+            "ctx_size": 12288
         }
     },
-    "global_test_definions": {
+    "global_test_definitions": {
         "quiz_size_2_2": {
-            "testType": "dataset_quiz",
+            "benchmark_type": "dataset_quiz",
             "params": {
                 "datasetSetSize": 2,
                 "evaluationStepRuns": 2,
@@ -38,7 +65,7 @@
             }
         },
         "quiz_size_1_1": {
-            "testType": "dataset_quiz",
+            "benchmark_type": "dataset_quiz",
             "params": {
                 "datasetSetSize": 1,
                 "evaluationStepRuns": 1,
@@ -48,18 +75,11 @@
     },
     "tests": [
         {
-            "benchmarkRunner": "Bielik-4.5B-v3.0-Instruct.Q8_0",
-            "evaluationRunner": "evaluator",
+            "benchmark_llm": "Qwen3-4B-Instruct-2507-Q4_K_M",
+            "evaluation_llm": "evaluator_quick",
             "runs": 1,
             "test": "quiz_size_1_1",
-            "name": "Bielik-4.5B_quiz_size_1_1"
-        },
-        {
-            "benchmarkRunner": "Bielik-11B-v3.0-Instruct.Q4_K_M",
-            "evaluationRunner": "evaluator",
-            "runs": 2,
-            "test": "quiz_size_2_2",
-            "name": "Bielik-11B_quiz_size_2_2"
+            "name": "Qwen3-4B-Instruct-2507-Q4_K_M_quiz_size_1_1"
         }
     ]
 }

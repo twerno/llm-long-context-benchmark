@@ -41,7 +41,7 @@ async function buildQuizData(props: IBuildQuizProps, benchmarkHomeDir: string): 
         .join("\n\n")
 
     const quizEntries = Array.from({ length: props.setsOfQuestions })
-        .map(() => buildFantasyCountryQuiz(dataset))
+        .map((_, idx) => buildFantasyCountryQuiz(dataset, idx))
         .reduce((prev, curr) => ([...prev, ...curr]), [])
 
     const quizData = {

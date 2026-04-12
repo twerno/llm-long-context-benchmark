@@ -148,11 +148,9 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
     process.stdout.write("[")
     for (let i = 0; i < repeatEvaluationNTimes; i++) {
 
-        // force new session
-        const taskId = `taskId=${Math.floor(Math.random() * 1e9)}\n`;
         const resp = await props.llmRunner.run({
             messages: [
-                { role: "system", content: taskId + systemPrompt },
+                { role: "system", content: systemPrompt },
                 { role: "user", content: message }
             ]
         })
