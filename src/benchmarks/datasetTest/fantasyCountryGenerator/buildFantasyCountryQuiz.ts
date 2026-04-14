@@ -1,7 +1,6 @@
 import { IQuizEntry } from "../DatasetTypes";
 import { ICountrySchema } from "./datasetGenerator/FantasyCountryDatasetTypes";
-import DatasetUtils from "./DatasetUtils";
-import dsUtils from "./DatasetUtils"
+import { default as dsUtils } from "./DatasetUtils";
 
 /**
  * Builds a quiz from the provided fantasy country dataset.
@@ -162,7 +161,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List all cities of the country with the smallest area?`,
-        answer: `FACT: Cities of the smallest country ("${country.name}") are ${DatasetUtils.joinList(cities)}.`,
+        answer: `FACT: Cities of the smallest country ("${country.name}") are ${dsUtils.joinList(cities)}.`,
         rawData: cities,
         type: "AGGREGATION_AND_MATH"
     })
@@ -181,7 +180,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List all provinces that belong to a country with ${color} in its flag and has a criminal rate of ${criminalRate.type} less than or equal to ${criminalRate.rate}.`,
-        answer: `FACT: The provinces are: ${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
+        answer: `FACT: The provinces are: ${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "LOGICAL_FILTERING"
     })
@@ -204,27 +203,12 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         question: `What country has the greatest numbers of cities?`,
         answer: countriesAndCities.length === 1
             ? `FACT: The country with greatest numbers of cities is "${countriesAndCities[0].name}"`
-            : `FACT: There are ${countriesAndCities.length} countries with the greatest numbers of cities: ${DatasetUtils.joinList(countriesAndCities.map(c => c.name))}.`,
+            : `FACT: There are ${countriesAndCities.length} countries with the greatest numbers of cities: ${dsUtils.joinList(countriesAndCities.map(c => c.name))}.`,
         rawData: countriesAndCities.map(c => c.name),
         type: "AGGREGATION_AND_MATH"
     })
 
     // 5
-    country = dsUtils.pickOne(dataset);
-    let totalResourceProductionInKg = country.province
-        .map(p => p.resources.map(r => r.normalisedProductionInKg)
-            .reduce((prev, curr) => prev + curr, 0))
-        .reduce((prev, curr) => prev + curr, 0)
-    quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
-        question: `What is the total resource production of ${country.name}? Sum everything up and give a single total number.`,
-        answer: `FACT: The total resource production of the country "${country.name}" is ${totalResourceProductionInKg} kilograms.`,
-        rawData: totalResourceProductionInKg,
-        type: "AGGREGATION_AND_MATH"
-    })
-
-    // 6
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
     let province2 = dsUtils.pickOne(country.province);
@@ -240,7 +224,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         type: "LOGICAL_FILTERING"
     })
 
-    // 7
+    // 6
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
     province2 = dsUtils.pickOne(country.province);
@@ -308,21 +292,9 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
         type: "AGGREGATION_AND_MATH"
     })
 
-    // 4
-    country = dataset
-        .sort((a, b) => a.density - b.density)[0]
-
-    quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
-        question: `Which country is the least densely populated?`,
-        answer: `The most densely populated province is ${country.name}`,
-        rawData: country.name,
-        type: "AGGREGATION_AND_MATH"
-    })
-
     return quizEntries;
 }
+
 
 function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerator: () => number, setIdx: number) {
     const quizEntries: IQuizEntry[] = [];
@@ -338,7 +310,7 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List TOP 5 provinces with the greatest population.`,
-        answer: `${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
+        answer: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "TOP_K_RANKING"
     })
@@ -354,7 +326,7 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List TOP 5 provinces with the highest population density.`,
-        answer: `${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
+        answer: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "TOP_K_RANKING"
     })
@@ -369,9 +341,37 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List TOP 5 provinces with the lowest population density.`,
-        answer: `${DatasetUtils.joinList(provinces.map(p => p.name))}.`,
+        answer: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "TOP_K_RANKING"
+    })
+
+    // 4
+    let country = dsUtils.pickOne(dataset);
+    let totalResourceProductionInKg = country.province
+        .map(p => p.resources.map(r => r.normalisedProductionInKg)
+            .reduce((prev, curr) => prev + curr, 0))
+        .reduce((prev, curr) => prev + curr, 0)
+    quizEntries.push({
+        questionNo: questionNoGenerator(),
+        questionSetNo: setIdx + 1,
+        question: `What is the total resource production of ${country.name}? Sum everything up and give a single total number with an unit.`,
+        answer: `FACT: The total resource production of the country "${country.name}" is ${totalResourceProductionInKg} kilograms.`,
+        rawData: totalResourceProductionInKg,
+        type: "IMPOSSIBLE"
+    })
+
+    // 5
+    country = dataset
+        .sort((a, b) => a.density - b.density)[0]
+
+    quizEntries.push({
+        questionNo: questionNoGenerator(),
+        questionSetNo: setIdx + 1,
+        question: `Which country is the least densely populated?`,
+        answer: `The most densely populated province is ${country.name}`,
+        rawData: country.name,
+        type: "IMPOSSIBLE"
     })
 
     return quizEntries;

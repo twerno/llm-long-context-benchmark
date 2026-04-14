@@ -1,20 +1,20 @@
-import { spawn, ChildProcess } from 'child_process';
-import type { ILLMRunnerProps, ILLMRunnerOutput, IManageableLLMRunner } from './ILLMRunner';
-import { OpenApiApiRunner } from './APILLMRunner';
-import { ILlamaRunnerSchema } from '../benchmark_orchestrator/configTypes';
+import { ChildProcess, spawn } from 'child_process';
+import { ILlamaRunner } from '../benchmark_orchestrator/configTypes';
+import type { ILLMRunnerOutput, ILLMRunnerProps, IManageableLLMRunner } from './ILLMRunner';
+import { OpenAICompatibleApiLlmRunner } from './OpenAICompatibleApiLlmRunner';
 
-export interface LlamaServerRunnerProps extends ILlamaRunnerSchema {
+export interface LlamaServerRunnerProps extends ILlamaRunner {
 
 }
 
 export class LlamaServerRunner implements IManageableLLMRunner {
     private serverProcess: ChildProcess | null = null;
     private host: string;
-    private apiRunner: OpenApiApiRunner;
+    private apiRunner: OpenAICompatibleApiLlmRunner;
 
     public constructor(private props: LlamaServerRunnerProps) {
         this.host = `http://${props.host ?? '127.0.0.1'}:${props.port ?? 8080}`
-        this.apiRunner = new OpenApiApiRunner(this.host)
+        this.apiRunner = new OpenAICompatibleApiLlmRunner(this.host)
     }
 
     public async start(): Promise<void> {
@@ -94,10 +94,10 @@ export class LlamaServerRunner implements IManageableLLMRunner {
 
 
 export class ManageableLLMRunnerWrapper implements IManageableLLMRunner {
-    private apiRunner: OpenApiApiRunner;
+    private apiRunner: OpenAICompatibleApiLlmRunner;
 
     public constructor(private host: string) {
-        this.apiRunner = new OpenApiApiRunner(this.host)
+        this.apiRunner = new OpenAICompatibleApiLlmRunner(this.host)
     }
 
     public start() { return Promise.resolve() }

@@ -1,6 +1,6 @@
 import path from "node:path";
 import z from "zod";
-import { ZQuizTestParams } from "../benchmark_orchestrator/configTypes";
+import { ZQuizTestParamsSchema } from "../benchmark_orchestrator/configTypes";
 import { IBenchmarkTask } from "../benchmark_orchestrator/IBenchmarkTask";
 import DatasetQuizTest, { IEvaluationResult, ILLMResponseToEvaluete } from "../benchmarks/datasetTest/DatasetQuizTest";
 import { IQuizData } from "../benchmarks/datasetTest/QuizDataUtils";
@@ -11,7 +11,7 @@ export interface IDatasetQuizTestRunnerRunProps {
     runId: string,
     homeDir: string,
     iterationDir: string,
-    params: z.infer<typeof ZQuizTestParams>
+    params: z.infer<typeof ZQuizTestParamsSchema>
 }
 
 

@@ -1,19 +1,18 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 import DatasetQuizBenchmarkTask from "../benchmark_orchestrator_task/DatasetQuizBenchmarkTask";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
 import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
 import FileUtils from "../utils/FileUtils";
-import { BenchmarkConfigSchema, IBenchmarkConfig, ITestConfigSchema, ITestConfigWrapperSchema } from "./configTypes";
+import { IGlobalConfig, IGlobalTestDef, IInternalTestConfigWrapper } from "./configTypes";
 import { IBenchmarkTask } from "./IBenchmarkTask";
 
 export interface OrchestratorOptions {
-    configPath: string;
+    tasks: IInternalTestConfigWrapper[];
+    globalConfigs: IGlobalConfig;
     testId?: string; // Katalog główny wyników
 }
 
 export class TestOrchestratorRunner {
-    private config!: IBenchmarkConfig;
     private rootDir!: string;
     private runResultContainer: IBeanchmarkResultContainer[] = []
 
@@ -22,10 +21,6 @@ export class TestOrchestratorRunner {
     async run(): Promise<void> {
         this.runResultContainer = []
 
-        // 1. Load and validate config
-        const configFileContent = await fs.readFile(this.options.configPath, "utf-8");
-        this.config = BenchmarkConfigSchema.parse(JSON.parse(configFileContent));
-
         // 2. Setup root directory
         this.rootDir = path.join("tmp", this.options.testId || `${new Date().toISOString().replace(/[:.]/g, "_")}`);
         FileUtils.createDirectorySafe(this.rootDir);
@@ -33,7 +28,7 @@ export class TestOrchestratorRunner {
         console.log(`Starting benchmark session: ${this.rootDir}`);
 
         // 3. Iterate through tests
-        for (const testConfig of this.config.tests) {
+        for (const testConfig of this.options.tasks) {
             try {
                 await this.runTest(testConfig);
             }
@@ -52,7 +47,7 @@ export class TestOrchestratorRunner {
             .forEach(([key, val]) => FileUtils.saveAsCsv(this.rootDir, `${key}.csv`, val));
     }
 
-    private async runTest(testConfigWrapper: ITestConfigWrapperSchema): Promise<void> {
+    private async runTest(testConfigWrapper: IInternalTestConfigWrapper): Promise<void> {
         const testName = this.getTestName(testConfigWrapper);
         const testHomeDir = path.join(this.rootDir, testConfigWrapper.test);
         const testDir = path.join(this.rootDir, testConfigWrapper.test, testName);
@@ -96,11 +91,11 @@ export class TestOrchestratorRunner {
 
                 // --- PERSIST EVALUATION RESULTS ---
                 const evaluationResults = await task.getEvaluationResults()
-                const runResults = this.saveResults(testConfigWrapper, iterationDir, runId, evaluationResults, undefined);
+                const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, evaluationResults, undefined);
                 this.runResultContainer.push(runResults);
             } catch (err) {
                 console.error(err)
-                const runResults = this.saveResults(testConfigWrapper, iterationDir, runId, undefined, err);
+                const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, undefined, err);
                 this.runResultContainer.push(runResults);
                 FileUtils.writeFile(iterationDir, "error.txt", `error\n` + JSON.stringify(err, null, 2))
             }
@@ -116,7 +111,7 @@ export class TestOrchestratorRunner {
     private async getLLMRunner(definition: string): Promise<IManageableLLMRunner> {
         // Resolve definition to actual runner instance
 
-        const runnerSpec = this.config.global_llms[definition];
+        const runnerSpec = this.options.globalConfigs.global_llms[definition];
         if (!runnerSpec)
             throw new Error(`Not Found runnerId="${definition}"`)
 
@@ -139,7 +134,7 @@ export class TestOrchestratorRunner {
         }
     }
 
-    private getTestName(testConfig: ITestConfigWrapperSchema): string {
+    private getTestName(testConfig: IInternalTestConfigWrapper): string {
         const testName = testConfig.name ?? `${testConfig.benchmark_llm}__${testConfig.test}__${testConfig.runs}`
         if (!this.runResultContainer.find(v => v.test_name === testName && v.test_type === testConfig.test)) {
             return testName;
@@ -148,14 +143,14 @@ export class TestOrchestratorRunner {
         return `${testName}_${new Date().toISOString().replace(/[:.]/g, "_")}`
     }
 
-    private getTestConfig(testConfigWrapper: ITestConfigWrapperSchema): ITestConfigSchema {
-        const testConfig = this.config.global_test_definitions[testConfigWrapper.test];
+    private getTestConfig(testConfigWrapper: IInternalTestConfigWrapper): IGlobalTestDef {
+        const testConfig = this.options.globalConfigs.global_test_definitions[testConfigWrapper.test];
         if (!testConfig)
             throw new Error(`Unknown testId: ${JSON.stringify(testConfigWrapper.test)}`);
         return testConfig;
     }
 
-    private getBenchmarkTask(testConfig: ITestConfigSchema, runId: string, testDir: string, iterationDir: string): IBenchmarkTask {
+    private getBenchmarkTask(testConfig: IGlobalTestDef, runId: string, testDir: string, iterationDir: string): IBenchmarkTask {
         if (testConfig.benchmark_type === "dataset_quiz") {
             return new DatasetQuizBenchmarkTask({
                 homeDir: testDir,
@@ -167,7 +162,7 @@ export class TestOrchestratorRunner {
         throw new Error(`unknown benchmarkType "${testConfig.benchmark_type}"`)
     }
 
-    private saveResults(testConfigWrapper: ITestConfigWrapperSchema, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined): IBeanchmarkResultContainer {
+    private saveResults(testConfigWrapper: IInternalTestConfigWrapper, iteration: number, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined): IBeanchmarkResultContainer {
 
         const testMetadata: IBenchmarkResult = {
             benchmark_lmm: testConfigWrapper.benchmark_llm,
@@ -175,7 +170,7 @@ export class TestOrchestratorRunner {
             test_type: testConfigWrapper.test,
             test_name: this.getTestName(testConfigWrapper),
             runId,
-            iteration: 1,
+            iteration,
             run_error,
         }
 

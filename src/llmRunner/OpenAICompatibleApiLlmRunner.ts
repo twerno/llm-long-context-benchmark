@@ -1,7 +1,7 @@
-import type { ILLMRunnerProps, ILLMRunnerOutput, ILLMRunner } from './ILLMRunner';
 import { z } from 'zod';
+import type { ILLMRunner, ILLMRunnerOutput, ILLMRunnerProps } from './ILLMRunner';
 
-type ChatCompletionRequestSchema = {
+type IChatCompletionRequestSchema = {
     model?: string,
     messages: Array<{
         role: 'system' | 'user' | 'assistant'
@@ -9,7 +9,7 @@ type ChatCompletionRequestSchema = {
     }>
 }
 
-const ChatCompletionResponseSchema = z.object({
+const ZChatCompletionResponseSchema = z.object({
     id: z.string(),
     object: z.string(),
     created: z.number(),
@@ -29,7 +29,7 @@ const ChatCompletionResponseSchema = z.object({
     })
 });
 
-export class OpenApiApiRunner implements ILLMRunner {
+export class OpenAICompatibleApiLlmRunner implements ILLMRunner {
     private CHAT_PATH: string = "/v1/chat/completions";
 
     public constructor(private host: string) {
@@ -39,7 +39,7 @@ export class OpenApiApiRunner implements ILLMRunner {
 
         const { messages } = props;
 
-        const request: ChatCompletionRequestSchema = {
+        const request: IChatCompletionRequestSchema = {
             messages
         }
 
@@ -60,7 +60,7 @@ export class OpenApiApiRunner implements ILLMRunner {
                 throw new Error(`API Error: ${errorData}`);
             }
 
-            const data = ChatCompletionResponseSchema.parse(await response.json());
+            const data = ZChatCompletionResponseSchema.parse(await response.json());
 
             const output = data.choices.map((choice) => choice.message.content);
 
@@ -81,4 +81,4 @@ export class OpenApiApiRunner implements ILLMRunner {
     }
 }
 
-export const LMStudioApiRunner = new OpenApiApiRunner('http://127.0.0.1:1234');
+export const LMStudioApiRunner = new OpenAICompatibleApiLlmRunner('http://127.0.0.1:1234');
