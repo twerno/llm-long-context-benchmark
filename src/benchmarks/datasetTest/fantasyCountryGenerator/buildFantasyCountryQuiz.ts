@@ -31,7 +31,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What is the full name of the ruler of the ${country.name}?`,
-        answer: `FACT: The ruler of the country "${country.name}" is "${country.ruler}".`,
+        hint: `FACT: The ruler of the country "${country.name}" is "${country.ruler}".`,
         rawData: country.ruler,
         type: "FACT_RETRIEVAL"
     })
@@ -41,7 +41,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What are the colors of the ${country.name}?`,
-        answer: `FACT: The colors of the country "${country.name}" are ${country.flagColors.join(", ")}.`,
+        hint: `FACT: The colors of the country "${country.name}" are ${country.flagColors.join(", ")}.`,
         rawData: country.flagColors,
         type: "FACT_RETRIEVAL"
     })
@@ -51,7 +51,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What is the state system of the ${country.name}?`,
-        answer: `FACT: The state system of the country "${country.name}" is "${country.stateSystem}".`,
+        hint: `FACT: The state system of the country "${country.name}" is "${country.stateSystem}".`,
         rawData: country.stateSystem,
         type: "FACT_RETRIEVAL"
     })
@@ -61,7 +61,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `How many provinces has the ${country.name}?`,
-        answer: `FACT: There are ${country.province.length} provinces in the country "${country.name}".`,
+        hint: `FACT: There are ${country.province.length} provinces in the country "${country.name}".`,
         rawData: `${country.province.length}`,
         type: "FACT_RETRIEVAL"
     })
@@ -72,7 +72,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `In which country is the ${province.name} province located?`,
-        answer: `FACT: The province "${province.name}" is located in the country "${country.name}".`,
+        hint: `FACT: The province "${province.name}" is located in the country "${country.name}".`,
         rawData: country.name,
         type: "RELATIONAL_MAPPING"
     })
@@ -83,7 +83,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What are the names of the resources produced in ${province.name}?`,
-        answer: `FACT: The province "${province.name}" of the country "${country.name}" produces the following resources: ${province.resources.map(p => p.type).join(", ")}.`,
+        hint: `FACT: The province "${province.name}" of the country "${country.name}" produces the following resources: ${province.resources.map(p => p.type).join(", ")}.`,
         rawData: province.resources.map(p => p.type),
         type: "FACT_RETRIEVAL"
     })
@@ -94,7 +94,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What are the cities in ${province.name}?`,
-        answer: `FACT: The "${province.name}" province of the country "${country.name}" has the following cities: ${province.cities.map(c => c.name).join(", ")}.`,
+        hint: `FACT: The "${province.name}" province of the country "${country.name}" has the following cities: ${province.cities.map(c => c.name).join(", ")}.`,
         rawData: province.cities.map(c => c.name),
         type: "FACT_RETRIEVAL"
     })
@@ -105,7 +105,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Which country is ruled by ${country.ruler}?`,
-        answer: `FACT: "${country.ruler}" is the ruler of country "${country.name}".`,
+        hint: `FACT: "${country.ruler}" is the ruler of country "${country.name}".`,
         rawData: country.name,
         type: "RELATIONAL_MAPPING"
     })
@@ -118,7 +118,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `In which country is the city of ${city.name} located?`,
-        answer: `FACT: The city of "${city.name}" is located in the country "${country.name}".`,
+        hint: `FACT: The city of "${city.name}" is located in the country "${country.name}".`,
         rawData: country.name,
         type: "RELATIONAL_MAPPING"
     })
@@ -130,7 +130,7 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What is the area of the ${province.name}?`,
-        answer: `FACT: The area of the province "${province.name}" is ${province.area} square kilometers.`,
+        hint: `FACT: The area of the province "${province.name}" is ${province.area} square kilometers.`,
         rawData: `${province.area}`,
         type: "FACT_RETRIEVAL"
     })
@@ -149,7 +149,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Which country has the largest area?`,
-        answer: `FACT: Country "${country.name}" has the largest area.`,
+        hint: `FACT: Country "${country.name}" has the largest area.`,
         rawData: country.name,
         type: "AGGREGATION_AND_MATH"
     })
@@ -161,7 +161,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List all cities of the country with the smallest area?`,
-        answer: `FACT: Cities of the smallest country ("${country.name}") are ${dsUtils.joinList(cities)}.`,
+        hint: `FACT: Cities of the smallest country ("${country.name}") are ${dsUtils.joinList(cities)}.`,
         rawData: cities,
         type: "AGGREGATION_AND_MATH"
     })
@@ -180,7 +180,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List all provinces that belong to a country with ${color} in its flag and has a criminal rate of ${criminalRate.type} less than or equal to ${criminalRate.rate}.`,
-        answer: `FACT: The provinces are: ${dsUtils.joinList(provinces.map(p => p.name))}.`,
+        hint: `FACT: The provinces are: ${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "LOGICAL_FILTERING"
     })
@@ -201,7 +201,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What country has the greatest numbers of cities?`,
-        answer: countriesAndCities.length === 1
+        hint: countriesAndCities.length === 1
             ? `FACT: The country with greatest numbers of cities is "${countriesAndCities[0].name}"`
             : `FACT: There are ${countriesAndCities.length} countries with the greatest numbers of cities: ${dsUtils.joinList(countriesAndCities.map(c => c.name))}.`,
         rawData: countriesAndCities.map(c => c.name),
@@ -217,7 +217,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Does ${fauna} live in ${province.name}? Answer with 'Yes' or 'No'.`,
-        answer: province.fauna.includes(fauna)
+        hint: province.fauna.includes(fauna)
             ? `A simple 'yes' as an answer is sufficient; FACT: "Fauna '${fauna}' does live in the province of '${province.name}'".`
             : `A simple 'no' as an answer is sufficient; FACT: "Fauna '${fauna}' doesn't live in the province of '${province.name}'".`,
         rawData: province.fauna.includes(fauna),
@@ -233,7 +233,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Does ${flora} grow in ${province.name}? Answer with 'Yes' or 'No'.`,
-        answer: province.flora.includes(flora)
+        hint: province.flora.includes(flora)
             ? `A simple 'yes' as an answer is sufficient; FACT: "Flora '${flora}' does grow in the province of '${province.name}'".`
             : `A simple 'no' as an answer is sufficient; FACT: "Flora '${flora}' doesn't grow in the province of '${province.name}'".`,
         rawData: province.flora.includes(flora),
@@ -259,7 +259,7 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Which province is the most densely populated?`,
-        answer: `The most densely populated province is ${province.name}`,
+        hint: `The most densely populated province is ${province.name}`,
         rawData: province.name,
         type: "AGGREGATION_AND_MATH"
     })
@@ -273,7 +273,7 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Which province is the least densely populated?`,
-        answer: `The least densely populated province is ${province.name}`,
+        hint: `The least densely populated province is ${province.name}`,
         rawData: province.name,
         type: "AGGREGATION_AND_MATH"
     })
@@ -287,7 +287,7 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Which country is the most densely populated?`,
-        answer: `The most densely populated province is ${country.name}`,
+        hint: `The most densely populated province is ${country.name}`,
         rawData: country.name,
         type: "AGGREGATION_AND_MATH"
     })
@@ -310,7 +310,7 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List TOP 5 provinces with the greatest population.`,
-        answer: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
+        hint: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "TOP_K_RANKING"
     })
@@ -326,7 +326,7 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List TOP 5 provinces with the highest population density.`,
-        answer: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
+        hint: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "TOP_K_RANKING"
     })
@@ -341,7 +341,7 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `List TOP 5 provinces with the lowest population density.`,
-        answer: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
+        hint: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
         type: "TOP_K_RANKING"
     })
@@ -356,7 +356,7 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `What is the total resource production of ${country.name}? Sum everything up and give a single total number with an unit.`,
-        answer: `FACT: The total resource production of the country "${country.name}" is ${totalResourceProductionInKg} kilograms.`,
+        hint: `FACT: The total resource production of the country "${country.name}" is ${totalResourceProductionInKg} kilograms.`,
         rawData: totalResourceProductionInKg,
         type: "IMPOSSIBLE"
     })
@@ -369,7 +369,7 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         questionNo: questionNoGenerator(),
         questionSetNo: setIdx + 1,
         question: `Which country is the least densely populated?`,
-        answer: `The most densely populated province is ${country.name}`,
+        hint: `The most densely populated province is ${country.name}`,
         rawData: country.name,
         type: "IMPOSSIBLE"
     })

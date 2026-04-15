@@ -53,15 +53,15 @@ export const ZQuizTestParamsSchema = z.object({
     evaluationStepRuns: z.number().positive()
 })
 
-export const ZQuizTestConfigSchema = z.object({
+export const ZQuizBenchmarkConfigSchema = z.object({
     benchmark_type: z.literal("dataset_quiz"),
 
     params: ZQuizTestParamsSchema
 })
 
-const ZTestConfigSchema = z.union([ZQuizTestConfigSchema])
+const ZBenchmarkConfigSchema = z.union([ZQuizBenchmarkConfigSchema])
 
-export const ITestConfigWrapperSchema = z.object({
+export const IBenchmarkRunConfigSchema = z.object({
     name: z.string().optional(),
     benchmark_llm: z.string(),
     evaluation_llm: z.string(),
@@ -69,7 +69,7 @@ export const ITestConfigWrapperSchema = z.object({
     test: z.union([z.string(), z.array(z.string())])
 });
 
-export type ITestConfigWrapper = z.infer<typeof ITestConfigWrapperSchema>;
+export type IBenchmarkConfig = z.infer<typeof IBenchmarkRunConfigSchema>;
 
 /**
  * Internal representation of a single test after expansion
@@ -87,20 +87,20 @@ export interface IInternalTestConfigWrapper {
  */
 const ZSpecSchema = z.union([ZOpenAiCompatibleSchema, ZLlamaRunnerSchema])
 
-export const ZBenchmarkConfigSchema = z.object({
+export const ZConfigSchema = z.object({
     global_llms: z.record(z.string(), ZSpecSchema),
-    global_test_definitions: z.record(z.string(), ZTestConfigSchema),
-    tests: z.array(ITestConfigWrapperSchema),
+    global_test_definitions: z.record(z.string(), ZBenchmarkConfigSchema),
+    benchmarks: z.array(IBenchmarkRunConfigSchema),
 });
 
-export type IBenchmarkConfig = z.infer<typeof ZBenchmarkConfigSchema>;
-export type IGlobalLLMMap = IBenchmarkConfig['global_llms'];
-export type IGlobalTestDefMap = IBenchmarkConfig['global_test_definitions'];
-export type IGlobalTestDef = IBenchmarkConfig['global_test_definitions'][string];
+export type IConfig = z.infer<typeof ZConfigSchema>;
+export type IGlobalLLMMap = IConfig['global_llms'];
+export type IGlobalTestDefMap = IConfig['global_test_definitions'];
+export type IGlobalTestDef = IConfig['global_test_definitions'][string];
 
 export type IGlobalConfig = {
     global_llms: IGlobalLLMMap;
     global_test_definitions: IGlobalTestDefMap;
 };
-export type ITestConfig = z.infer<typeof ZTestConfigSchema>;
+export type ITestConfig = z.infer<typeof ZBenchmarkConfigSchema>;
 export type ISpec = z.infer<typeof ZSpecSchema>;

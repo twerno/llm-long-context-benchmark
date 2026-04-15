@@ -1,1 +1,8 @@
+- dodac prompt_tokens, evaluation_tokens, times
+- question_0 - idx od 1
+- question - dodac dodatkowe informacje (dataset, odpowiedz, metadane)
+- config - tests - string lub lista stringow
+- config - model llama-override
+- przeniesc zapisywanie/odczytywanie promptu z pliku na poziom orchestratora
+- pytania lista tagów zamiast pojedynczego
 - dopisać taski dla pozostałych testów

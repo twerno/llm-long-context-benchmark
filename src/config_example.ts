@@ -1,6 +1,6 @@
-import { IBenchmarkConfig } from "./benchmark_orchestrator/configTypes";
+import { IConfig } from "./benchmark_orchestrator/configTypes";
 
-const example: IBenchmarkConfig = {
+const example: IConfig = {
     global_llms: {
         "google_gemma-4-26B-A4B-it-Q4_K_S": {
             type: "llamacpp",
@@ -25,7 +25,7 @@ const example: IBenchmarkConfig = {
             }
         }
     },
-    tests: [
+    benchmarks: [
         {
             benchmark_llm: "Bielik-4.5B-v3.0-Instruct.Q8_0",
             evaluation_llm: "google_gemma-4-26B-A4B-it-Q4_K_S",

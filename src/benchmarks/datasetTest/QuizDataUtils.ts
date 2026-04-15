@@ -18,7 +18,7 @@ export interface IQuizData {
     quizId: string,
     dataset: ICountrySchema[],
     datasetPrompt: string,
-    quizEntries: IQuizEntry[],
+    quizTests: IQuizEntry[],
 }
 
 export default {
@@ -63,7 +63,7 @@ function saveQuiz(data: IQuizData, benchmarkHomeDir: string) {
 
     FileUtils.writeFile(dirPath, `dataset.json`, JSON.stringify(data.dataset, null, 2))
     FileUtils.writeFile(dirPath, `dataset_prompt.md`, data.datasetPrompt)
-    FileUtils.writeFile(dirPath, `quiz.json`, JSON.stringify(data.quizEntries, null, 2))
+    FileUtils.writeFile(dirPath, `quiz.json`, JSON.stringify(data.quizTests, null, 2))
 }
 
 function loadQuiz(quizId: string, benchmarkHomeDir: string): IQuizData | null {
@@ -83,6 +83,6 @@ function loadQuiz(quizId: string, benchmarkHomeDir: string): IQuizData | null {
         quizId,
         dataset: JSON.parse(datasetTEXT),
         datasetPrompt: datasetPromptTEXT,
-        quizEntries: JSON.parse(quizTEXT)
+        quizTests: JSON.parse(quizTEXT)
     }
 }

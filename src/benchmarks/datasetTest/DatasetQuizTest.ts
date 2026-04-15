@@ -4,6 +4,9 @@ import QuizDataUtils, { IQuizData } from "./QuizDataUtils";
 import FileUtils from "../../utils/FileUtils";
 
 
+
+
+
 /**
  * Interface for generating data parameters
  */
@@ -31,11 +34,15 @@ async function getQuizData(options: IGenerateDataProps, benchmarkHomeDir: string
     return newQuizData;
 }
 
-
-export interface ILLMResponseToEvaluete {
+export type ILLMResponseToEvaluete = {
+    error: any,
+    quizEntry: IQuizEntry,
+} | {
     llmAnswer: string,
-    error?: any,
-    quizEntry: IQuizEntry
+    error?: undefined,
+    quizEntry: IQuizEntry,
+    promptTokens: number,
+    completionTokens: number
 }
 
 interface IExecureProps {
@@ -52,11 +59,11 @@ async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): 
 
     let resp: ILLMRunnerOutput | undefined
 
-    for (let i = 0; i < quizData.quizEntries.length; i++) {
+    for (let i = 0; i < quizData.quizTests.length; i++) {
 
-        console.log(`[Quiz="${quizData.quizId}"] [runId=${runId}] testing [${i + 1}/${quizData.quizEntries.length}].`)
+        console.log(`[Quiz="${quizData.quizId}"] [runId=${runId}] testing [${i + 1}/${quizData.quizTests.length}].`)
 
-        const quizEntry = quizData.quizEntries[i]
+        const quizEntry = quizData.quizTests[i]
         try {
             const requestBody: Parameters<typeof llmRunner.run>[0] = {
                 messages: [
@@ -66,12 +73,14 @@ async function execute({ llmRunner, quizData, runId, dirPath }: IExecureProps): 
             }
             resp = await llmRunner.run(requestBody)
             const llmAnswer = resp.output[0]
-            FileUtils.writeFile(dirPath, `question_${i}.json`, JSON.stringify({ quizEntry, llmAnswer, tokens: resp.totalTokens }, null, 2));
+            const { promptTokens, completionTokens } = resp;
 
-            responsesToEvaluate.push({ quizEntry, llmAnswer: llmAnswer })
+            FileUtils.writeFile(dirPath, `question_${i + 1}.json`, JSON.stringify({ quizEntry, llmAnswer, promptTokens, completionTokens }, null, 2));
+
+            responsesToEvaluate.push({ quizEntry, llmAnswer, promptTokens, completionTokens })
         } catch (err: any) {
-            console.error(err)
-            responsesToEvaluate.push({ quizEntry, llmAnswer: "ERROR", error: JSON.stringify(err?.message ?? err) })
+
+            responsesToEvaluate.push({ quizEntry, error: JSON.stringify(err?.message ?? err) })
         }
     }
 
@@ -94,8 +103,11 @@ interface IQuestionEvaluation {
     quizEntry: IQuizEntry,
     llmAnswer: string,
     evaluationResults: boolean[],
-    combinedEvaluation: boolean
+    combinedEvaluation: boolean,
+    promptTokens: number,
+    completionTokens: number
 }
+
 export interface IEvaluationResult {
     evaluatedQuestions: IQuestionEvaluation[],
     correct: number,
@@ -143,7 +155,7 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
 
     const message = messageTemplate
         .replace("<QUESTION>", responseToEvaluate.quizEntry.question)
-        .replace("<HINT>", responseToEvaluate.quizEntry.answer)
+        .replace("<HINT>", responseToEvaluate.quizEntry.hint)
         .replace("<ANSWER>", responseToEvaluate.llmAnswer);
 
     const evaluationResults: boolean[] = []
@@ -165,7 +177,7 @@ async function evaluateResponse(responseToEvaluate: ILLMResponseToEvaluete, resp
 
         FileUtils.writeFile(
             props.metadata.dirPath,
-            `evaluation_${responseIdx}__attempt_${i + 1}.txt`,
+            `evaluation_${responseIdx + 1}__attempt_${i + 1}.txt`,
             message + "\n\n ================================= \n" + resp.output[0]
         );
     }

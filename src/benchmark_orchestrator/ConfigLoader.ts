@@ -2,7 +2,7 @@ import fs from 'fs';
 import {
     IGlobalConfig,
     IInternalTestConfigWrapper,
-    ZBenchmarkConfigSchema
+    ZConfigSchema
 } from './configTypes';
 
 export interface IConfigLoaderResult {
@@ -13,7 +13,7 @@ export interface IConfigLoaderResult {
 export class ConfigLoader {
     public static load(configPath: string): IConfigLoaderResult {
         const fileContent = fs.readFileSync(configPath, 'utf-8');
-        const rawConfig = ZBenchmarkConfigSchema.parse(JSON.parse(fileContent));
+        const rawConfig = ZConfigSchema.parse(JSON.parse(fileContent));
 
         const tasks: IInternalTestConfigWrapper[] = [];
         const globalConfigs: IGlobalConfig = {
@@ -21,7 +21,7 @@ export class ConfigLoader {
             global_test_definitions: rawConfig.global_test_definitions
         };
 
-        for (const entry of rawConfig.tests) {
+        for (const entry of rawConfig.benchmarks) {
             if (Array.isArray(entry.test)) {
                 for (const testId of entry.test) {
                     tasks.push({

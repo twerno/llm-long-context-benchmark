@@ -12,14 +12,14 @@ export interface OrchestratorOptions {
     testId?: string; // Katalog główny wyników
 }
 
-export class TestOrchestratorRunner {
+export class BenchmarkOrchestrator {
     private rootDir!: string;
-    private runResultContainer: IBeanchmarkResultContainer[] = []
+    private benchmarkResults: IBeanchmarkResult[] = []
 
     constructor(private options: OrchestratorOptions) { }
 
     async run(): Promise<void> {
-        this.runResultContainer = []
+        this.benchmarkResults = []
 
         // 2. Setup root directory
         this.rootDir = path.join("tmp", this.options.testId || `${new Date().toISOString().replace(/[:.]/g, "_")}`);
@@ -38,10 +38,10 @@ export class TestOrchestratorRunner {
         }
 
         // --- PERSIST EVALUATION RESULTS ---
-        const resultsCombinedByType = this.runResultContainer
+        const resultsCombinedByType = this.benchmarkResults
             .reduce((prev, curr) => ({
                 ...prev,
-                [curr.test_type]: [...(prev[curr.test_type] ?? []), ...curr.results]
+                [curr.benchmark_type]: [...(prev[curr.benchmark_type] ?? []), ...curr.results]
             }), {} as Record<string, IBenchmarkResult[]>)
         Object.entries(resultsCombinedByType)
             .forEach(([key, val]) => FileUtils.saveAsCsv(this.rootDir, `${key}.csv`, val));
@@ -92,17 +92,17 @@ export class TestOrchestratorRunner {
                 // --- PERSIST EVALUATION RESULTS ---
                 const evaluationResults = await task.getEvaluationResults()
                 const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, evaluationResults, undefined);
-                this.runResultContainer.push(runResults);
+                this.benchmarkResults.push(runResults);
             } catch (err) {
                 console.error(err)
                 const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, undefined, err);
-                this.runResultContainer.push(runResults);
+                this.benchmarkResults.push(runResults);
                 FileUtils.writeFile(iterationDir, "error.txt", `error\n` + JSON.stringify(err, null, 2))
             }
         }
 
-        const combinedResults = this.runResultContainer
-            .filter(v => v.test_name === testName && v.test_type === testConfigWrapper.test)
+        const combinedResults = this.benchmarkResults
+            .filter(v => v.benchmrk_run_name === testName && v.benchmark_type === testConfigWrapper.test)
             .reduce((prev, curr) => [...prev, ...curr.results], [] as IBenchmarkResult[])
         FileUtils.saveAsCsv(testHomeDir, `results.csv`, combinedResults);
         console.log(`[FINISH] Completed test: ${this.getTestName(testConfigWrapper)}`);
@@ -136,7 +136,7 @@ export class TestOrchestratorRunner {
 
     private getTestName(testConfig: IInternalTestConfigWrapper): string {
         const testName = testConfig.name ?? `${testConfig.benchmark_llm}__${testConfig.test}__${testConfig.runs}`
-        if (!this.runResultContainer.find(v => v.test_name === testName && v.test_type === testConfig.test)) {
+        if (!this.benchmarkResults.find(v => v.benchmrk_run_name === testName && v.benchmark_type === testConfig.test)) {
             return testName;
         }
 
@@ -162,7 +162,7 @@ export class TestOrchestratorRunner {
         throw new Error(`unknown benchmarkType "${testConfig.benchmark_type}"`)
     }
 
-    private saveResults(testConfigWrapper: IInternalTestConfigWrapper, iteration: number, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined): IBeanchmarkResultContainer {
+    private saveResults(testConfigWrapper: IInternalTestConfigWrapper, iteration: number, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined): IBeanchmarkResult {
 
         const testMetadata: IBenchmarkResult = {
             benchmark_lmm: testConfigWrapper.benchmark_llm,
@@ -181,17 +181,17 @@ export class TestOrchestratorRunner {
         FileUtils.saveAsCsv(iterationDir, `results.csv`, safeTaskResults);
 
         return {
-            test_name: testMetadata.test_name,
-            test_type: testMetadata.test_type,
+            benchmrk_run_name: testMetadata.test_name,
+            benchmark_type: testMetadata.test_type,
             error: run_error,
             results: safeTaskResults
         };
     }
 }
 
-interface IBeanchmarkResultContainer {
-    test_type: string,
-    test_name: string,
+interface IBeanchmarkResult {
+    benchmark_type: string,
+    benchmrk_run_name: string,
     error?: unknown,
     results: IBenchmarkResult[]
 }
