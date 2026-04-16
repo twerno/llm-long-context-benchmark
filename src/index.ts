@@ -1,5 +1,5 @@
+import { ConfigLoader } from "./app/ConfigLoader"
 import { BenchmarkOrchestrator } from "./benchmark_orchestrator/BenchmarkOrchestrator"
-import { ConfigLoader } from "./benchmark_orchestrator/ConfigLoader"
 
 async function run() {
     const configPath = `./config.json`

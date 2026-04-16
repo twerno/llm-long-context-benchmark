@@ -1,9 +1,8 @@
 import fs from 'fs';
-import {
-    IGlobalConfig,
-    IInternalTestConfigWrapper,
-    ZConfigSchema
-} from './configTypes';
+import { ZConfigSchema } from './configSchema';
+import { IGlobalConfig, IInternalTestConfigWrapper } from './configType';
+
+
 
 export interface IConfigLoaderResult {
     tasks: IInternalTestConfigWrapper[];

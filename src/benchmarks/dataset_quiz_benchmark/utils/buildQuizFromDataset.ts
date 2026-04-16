@@ -1,5 +1,5 @@
-import { IQuizEntry } from "../DatasetTypes";
-import { ICountrySchema } from "./datasetGenerator/FantasyCountryDatasetTypes";
+import { IQuizEntry as IQuizQuestion } from "./IQuizTypes";
+import { ICountrySchema } from "../dataset_generator/FantasyCountryDatasetTypes";
 import { default as dsUtils } from "./DatasetUtils";
 
 /**
@@ -8,28 +8,28 @@ import { default as dsUtils } from "./DatasetUtils";
  * @param dataset - An array of country schemas to generate questions from.
  * @returns An array of quiz entries containing questions and answers.
  */
-export default function buildQuiz(dataset: ICountrySchema[], setIdx: number) {
+export default function buildQuizFromDataset(dataset: ICountrySchema[], setIdx: number): IQuizQuestion[] {
     let idx = 0;
 
-    const questionNoGenerator = () => ++idx
+    const questionIdxGenerator = () => idx++
     return [
-        ...build10SimpleQuestions(dataset, questionNoGenerator, setIdx),
-        ...buildComplexQuestions(dataset, questionNoGenerator, setIdx),
-        ...buildTrickyQuestions(dataset, questionNoGenerator, setIdx),
-        ...buildImpossiblesQuestions(dataset, questionNoGenerator, setIdx)
+        ...build10SimpleQuestions(dataset, questionIdxGenerator, setIdx),
+        ...buildComplexQuestions(dataset, questionIdxGenerator, setIdx),
+        ...buildTrickyQuestions(dataset, questionIdxGenerator, setIdx),
+        ...buildImpossiblesQuestions(dataset, questionIdxGenerator, setIdx)
     ];
 }
 
 /**
  * Generates 10 simple questions based on the provided dataset.
  */
-function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: () => number, setIdx: number): IQuizEntry[] {
-    const quizEntries: IQuizEntry[] = [];
+function build10SimpleQuestions(dataset: ICountrySchema[], questionIdxGenerator: () => number, setIdx: number): IQuizQuestion[] {
+    const quizEntries: IQuizQuestion[] = [];
     // 1
     let country = dsUtils.pickOne(dataset);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `What is the full name of the ruler of the ${country.name}?`,
         hint: `FACT: The ruler of the country "${country.name}" is "${country.ruler}".`,
         rawData: country.ruler,
@@ -38,8 +38,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     // 2
     country = dsUtils.pickOne(dataset);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `What are the colors of the ${country.name}?`,
         hint: `FACT: The colors of the country "${country.name}" are ${country.flagColors.join(", ")}.`,
         rawData: country.flagColors,
@@ -48,8 +48,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     // 3
     country = dsUtils.pickOne(dataset);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `What is the state system of the ${country.name}?`,
         hint: `FACT: The state system of the country "${country.name}" is "${country.stateSystem}".`,
         rawData: country.stateSystem,
@@ -58,8 +58,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     // 4
     country = dsUtils.pickOne(dataset);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `How many provinces has the ${country.name}?`,
         hint: `FACT: There are ${country.province.length} provinces in the country "${country.name}".`,
         rawData: `${country.province.length}`,
@@ -69,8 +69,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     country = dsUtils.pickOne(dataset);
     let province = dsUtils.pickOne(country.province);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `In which country is the ${province.name} province located?`,
         hint: `FACT: The province "${province.name}" is located in the country "${country.name}".`,
         rawData: country.name,
@@ -80,8 +80,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `What are the names of the resources produced in ${province.name}?`,
         hint: `FACT: The province "${province.name}" of the country "${country.name}" produces the following resources: ${province.resources.map(p => p.type).join(", ")}.`,
         rawData: province.resources.map(p => p.type),
@@ -91,8 +91,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `What are the cities in ${province.name}?`,
         hint: `FACT: The "${province.name}" province of the country "${country.name}" has the following cities: ${province.cities.map(c => c.name).join(", ")}.`,
         rawData: province.cities.map(c => c.name),
@@ -102,8 +102,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     // 8
     country = dsUtils.pickOne(dataset);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `Which country is ruled by ${country.ruler}?`,
         hint: `FACT: "${country.ruler}" is the ruler of country "${country.name}".`,
         rawData: country.name,
@@ -115,8 +115,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     province = dsUtils.pickOne(country.province);
     let city = dsUtils.pickOne(province.cities);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `In which country is the city of ${city.name} located?`,
         hint: `FACT: The city of "${city.name}" is located in the country "${country.name}".`,
         rawData: country.name,
@@ -127,8 +127,8 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionIdxGenerator(),
+        questionSetIdx: setIdx,
         question: `What is the area of the ${province.name}?`,
         hint: `FACT: The area of the province "${province.name}" is ${province.area} square kilometers.`,
         rawData: `${province.area}`,
@@ -141,13 +141,13 @@ function build10SimpleQuestions(dataset: ICountrySchema[], questionNoGenerator: 
  * Placeholder for building complex questions.
  */
 function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: () => number, setIdx: number) {
-    const quizEntries: IQuizEntry[] = [];
+    const quizEntries: IQuizQuestion[] = [];
 
     // 1
     let country = dataset.sort((a, b) => a.area - b.area).reverse()[0];
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `Which country has the largest area?`,
         hint: `FACT: Country "${country.name}" has the largest area.`,
         rawData: country.name,
@@ -158,8 +158,8 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
     country = dataset.sort((a, b) => a.area - b.area)[0];
     let cities = country.province.map(p => p.cities.map(c => c.name)).reduce((prev, curr) => [...prev, ...curr], [])
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `List all cities of the country with the smallest area?`,
         hint: `FACT: Cities of the smallest country ("${country.name}") are ${dsUtils.joinList(cities)}.`,
         rawData: cities,
@@ -177,8 +177,8 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         .filter(p => p.crimeRates.find(c => c.type === criminalRate.type && c.rate <= criminalRate.rate))
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `List all provinces that belong to a country with ${color} in its flag and has a criminal rate of ${criminalRate.type} less than or equal to ${criminalRate.rate}.`,
         hint: `FACT: The provinces are: ${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
@@ -198,8 +198,8 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
         .filter((c, _, arr) => c.cities.length === arr[0].cities.length)
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `What country has the greatest numbers of cities?`,
         hint: countriesAndCities.length === 1
             ? `FACT: The country with greatest numbers of cities is "${countriesAndCities[0].name}"`
@@ -214,8 +214,8 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
     let province2 = dsUtils.pickOne(country.province);
     let fauna = dsUtils.pickOne(province2.fauna);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `Does ${fauna} live in ${province.name}? Answer with 'Yes' or 'No'.`,
         hint: province.fauna.includes(fauna)
             ? `A simple 'yes' as an answer is sufficient; FACT: "Fauna '${fauna}' does live in the province of '${province.name}'".`
@@ -230,8 +230,8 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
     province2 = dsUtils.pickOne(country.province);
     let flora = dsUtils.pickOne(province2.flora);
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `Does ${flora} grow in ${province.name}? Answer with 'Yes' or 'No'.`,
         hint: province.flora.includes(flora)
             ? `A simple 'yes' as an answer is sufficient; FACT: "Flora '${flora}' does grow in the province of '${province.name}'".`
@@ -247,7 +247,7 @@ function buildComplexQuestions(dataset: ICountrySchema[], questionNoGenerator: (
  * Those question does not test model ability memory, but its ability to make computations
  */
 function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: () => number, setIdx: number) {
-    const quizEntries: IQuizEntry[] = [];
+    const quizEntries: IQuizQuestion[] = [];
 
     // 1
     let province = dataset.map(c => c.province)
@@ -256,8 +256,8 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
         .reverse()[0]
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `Which province is the most densely populated?`,
         hint: `The most densely populated province is ${province.name}`,
         rawData: province.name,
@@ -270,8 +270,8 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
         .sort((a, b) => a.density - b.density)[0]
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `Which province is the least densely populated?`,
         hint: `The least densely populated province is ${province.name}`,
         rawData: province.name,
@@ -284,8 +284,8 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
         .reverse()[0]
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `Which country is the most densely populated?`,
         hint: `The most densely populated province is ${country.name}`,
         rawData: country.name,
@@ -297,7 +297,7 @@ function buildTrickyQuestions(dataset: ICountrySchema[], questionNoGenerator: ()
 
 
 function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerator: () => number, setIdx: number) {
-    const quizEntries: IQuizEntry[] = [];
+    const quizEntries: IQuizQuestion[] = [];
 
     // 1
     let provinces = dataset.map(c => c.province)
@@ -307,8 +307,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         .slice(0, 5)
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `List TOP 5 provinces with the greatest population.`,
         hint: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
@@ -323,8 +323,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         .slice(0, 5)
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `List TOP 5 provinces with the highest population density.`,
         hint: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
@@ -338,8 +338,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         .slice(0, 5)
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `List TOP 5 provinces with the lowest population density.`,
         hint: `${dsUtils.joinList(provinces.map(p => p.name))}.`,
         rawData: provinces.map(p => p.name),
@@ -353,8 +353,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
             .reduce((prev, curr) => prev + curr, 0))
         .reduce((prev, curr) => prev + curr, 0)
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `What is the total resource production of ${country.name}? Sum everything up and give a single total number with an unit.`,
         hint: `FACT: The total resource production of the country "${country.name}" is ${totalResourceProductionInKg} kilograms.`,
         rawData: totalResourceProductionInKg,
@@ -366,8 +366,8 @@ function buildImpossiblesQuestions(dataset: ICountrySchema[], questionNoGenerato
         .sort((a, b) => a.density - b.density)[0]
 
     quizEntries.push({
-        questionNo: questionNoGenerator(),
-        questionSetNo: setIdx + 1,
+        questionInSetIdx: questionNoGenerator(),
+        questionSetIdx: setIdx,
         question: `Which country is the least densely populated?`,
         hint: `The most densely populated province is ${country.name}`,
         rawData: country.name,

@@ -1,15 +1,9 @@
 import { z } from "zod";
 
-/**
- * Typy dla Runnerów LLM
- */
-
 export const ZOpenAiCompatibleSchema = z.object({
     type: z.literal("openAICompatible"),
     url: z.url(),
 });
-
-export type IOpenAiCompatible = z.infer<typeof ZOpenAiCompatibleSchema>
 
 export const ZLlamaRunnerSchema = z.object({
     type: z.literal("llamacpp"),
@@ -26,19 +20,11 @@ export const ZLlamaRunnerSchema = z.object({
     extra_flags: z.array(z.string()).optional()
 });
 
-export type ILlamaRunner = z.infer<typeof ZLlamaRunnerSchema>
-
 export const ZRunnerDefinitionSchema = z.union([
     z.string(),              // Odwołanie do globalnej listy
     ZOpenAiCompatibleSchema,  // Definicja inline LM Studio
     ZLlamaRunnerSchema,       // Definicja inline Llama
 ]);
-
-export type IRunnerDefinition = z.infer<typeof ZRunnerDefinitionSchema>;
-
-/**
- * Typy dla Testów
- */
 
 export const ZTestTypeEnum = z.enum([
     "hidden_phrase",
@@ -69,18 +55,6 @@ export const IBenchmarkRunConfigSchema = z.object({
     test: z.union([z.string(), z.array(z.string())])
 });
 
-export type IBenchmarkConfig = z.infer<typeof IBenchmarkRunConfigSchema>;
-
-/**
- * Internal representation of a single test after expansion
- */
-export interface IInternalTestConfigWrapper {
-    name: string;
-    benchmark_llm: string;
-    evaluation_llm: string;
-    runs: number;
-    test: string;
-}
 
 /**
  * Główny schemat konfiguracji całego benchmarku
@@ -93,14 +67,3 @@ export const ZConfigSchema = z.object({
     benchmarks: z.array(IBenchmarkRunConfigSchema),
 });
 
-export type IConfig = z.infer<typeof ZConfigSchema>;
-export type IGlobalLLMMap = IConfig['global_llms'];
-export type IGlobalTestDefMap = IConfig['global_test_definitions'];
-export type IGlobalTestDef = IConfig['global_test_definitions'][string];
-
-export type IGlobalConfig = {
-    global_llms: IGlobalLLMMap;
-    global_test_definitions: IGlobalTestDefMap;
-};
-export type ITestConfig = z.infer<typeof ZBenchmarkConfigSchema>;
-export type ISpec = z.infer<typeof ZSpecSchema>;

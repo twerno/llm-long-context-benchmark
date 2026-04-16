@@ -1,6 +1,6 @@
 import type { ICity, ICountrySchema, ICrimeRate, IProvince, IResource } from "./FantasyCountryDatasetTypes";
 import datasetConsts from './FantasyCountryDatasetConsts'
-import dsUtils from "../DatasetUtils"
+import dsUtils from "../utils/DatasetUtils"
 
 export default class FantasyCountryDatasetGenerator {
 

@@ -1,5 +1,5 @@
 import { ChildProcess, spawn } from 'child_process';
-import { ILlamaRunner } from '../benchmark_orchestrator/configTypes';
+import { ILlamaRunner } from '../app/configType';
 import type { ILLMRunnerOutput, ILLMRunnerProps, IManageableLLMRunner } from './ILLMRunner';
 import { OpenAICompatibleApiLlmRunner } from './OpenAICompatibleApiLlmRunner';
 

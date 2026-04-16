@@ -1,4 +1,5 @@
-import { IConfig } from "./benchmark_orchestrator/configTypes";
+import { IConfig } from "./app/configType";
+
 
 const example: IConfig = {
     global_llms: {

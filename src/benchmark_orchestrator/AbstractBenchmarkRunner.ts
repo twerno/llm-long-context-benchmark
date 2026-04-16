@@ -11,12 +11,13 @@ export interface IBenchmarkRunnerConfig {
         name: string,
         runner: ILLMRunner
     },
-    runDir: string,
+    logDir: string,
     benchmarkRuns: number,
     evaluationRuns: number
 }
 
 export interface ITestData {
+    testIdx: number,
     systemPrompt: string[],
     userPrompt: string[]
 }
@@ -83,9 +84,9 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
             const resp = await this.sendRequest2Llm(this.props.benchmarkLlm.runner, requestBody);
             const { completionTokens, llmAnswer, promptTokens, totalTime } = resp;
 
-            if (this.props.runDir) {
+            if (this.props.logDir) {
                 const body = JSON.stringify({ data, llmAnswer, promptTokens, completionTokens, totalTime }, null, 2);
-                FileUtils.writeFile(this.props.runDir, `test.json`, body);
+                FileUtils.writeFile(this.props.logDir, `test_${data.testIdx + 1}.json`, body);
             }
 
             return this.mapTestSuccessResponse(data, {
@@ -125,9 +126,9 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
 
             const evaluationResult = await this.internalEvaluateLlmAnswer(data, testRunData, llmAnswer);
 
-            if (this.props.runDir) {
+            if (this.props.logDir) {
                 const body = JSON.stringify({ data, testRun: testRunData, llmAnswer, evaluationResult, promptTokens, completionTokens, totalTime }, null, 2);
-                FileUtils.writeFile(this.props.runDir, `evaluation_${iterationIdx + 1}.json`, body);
+                FileUtils.writeFile(this.props.logDir, `evaluation_${data.testIdx + 1}_${iterationIdx + 1}.json`, body);
             }
 
             return this.mapEvaluationSuccessResponse(data, testRunData, {

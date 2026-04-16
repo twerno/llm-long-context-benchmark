@@ -1,14 +1,14 @@
 import path from "node:path";
-import DatasetQuizBenchmarkTask from "../benchmark_orchestrator_task/DatasetQuizBenchmarkTask";
+import { IGlobalConfig, IGlobalTestDef, IInternalTestConfigWrapper } from "../app/configType";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
 import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
 import FileUtils from "../utils/FileUtils";
-import { IGlobalConfig, IGlobalTestDef, IInternalTestConfigWrapper } from "./configTypes";
-import { IBenchmarkTask } from "./IBenchmarkTask";
+
 
 export interface OrchestratorOptions {
     tasks: IInternalTestConfigWrapper[];
     globalConfigs: IGlobalConfig;
+    rootDir?: string,
     testId?: string; // Katalog główny wyników
 }
 
@@ -22,7 +22,7 @@ export class BenchmarkOrchestrator {
         this.benchmarkResults = []
 
         // 2. Setup root directory
-        this.rootDir = path.join("tmp", this.options.testId || `${new Date().toISOString().replace(/[:.]/g, "_")}`);
+        this.rootDir = path.join(this.options.rootDir ?? "tmp", this.options.testId || `${new Date().toISOString().replace(/[:.]/g, "_")}`);
         FileUtils.createDirectorySafe(this.rootDir);
 
         console.log(`Starting benchmark session: ${this.rootDir}`);
@@ -69,30 +69,30 @@ export class BenchmarkOrchestrator {
             FileUtils.createDirectorySafe(iterationDir);
             const runId = `${testName}_${iterationId}`
             try {
-                const task: IBenchmarkTask = this.getBenchmarkTask(testConfig, runId, testHomeDir, iterationDir)
+                const task: unknown = this.getBenchmarkTask(testConfig, runId, testHomeDir, iterationDir)
 
-                // --- BENCHMARK STEP ---
-                const benchmarkLLMRunner = await this.getLLMRunner(testConfigWrapper.benchmark_llm);
-                try {
-                    console.log(`  [${iterationId}] Running benchmark...`);
-                    await task.run(benchmarkLLMRunner)
-                } finally {
-                    await this.cleanupLLMRunner(benchmarkLLMRunner);
-                }
+                // // --- BENCHMARK STEP ---
+                // const benchmarkLLMRunner = await this.getLLMRunner(testConfigWrapper.benchmark_llm);
+                // try {
+                //     console.log(`  [${iterationId}] Running benchmark...`);
+                //     await task.run(benchmarkLLMRunner)
+                // } finally {
+                //     await this.cleanupLLMRunner(benchmarkLLMRunner);
+                // }
 
-                // --- EVALUATION STEP ---
-                const evalRunner = await this.getLLMRunner(testConfigWrapper.evaluation_llm);
-                try {
-                    console.log(`  [${iterationId}] Running evaluation...`);
-                    await task.evaluate(evalRunner)
-                } finally {
-                    await this.cleanupLLMRunner(evalRunner);
-                }
+                // // --- EVALUATION STEP ---
+                // const evalRunner = await this.getLLMRunner(testConfigWrapper.evaluation_llm);
+                // try {
+                //     console.log(`  [${iterationId}] Running evaluation...`);
+                //     await task.evaluate(evalRunner)
+                // } finally {
+                //     await this.cleanupLLMRunner(evalRunner);
+                // }
 
-                // --- PERSIST EVALUATION RESULTS ---
-                const evaluationResults = await task.getEvaluationResults()
-                const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, evaluationResults, undefined);
-                this.benchmarkResults.push(runResults);
+                // // --- PERSIST EVALUATION RESULTS ---
+                // const evaluationResults = await task.getEvaluationResults()
+                // const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, evaluationResults, undefined);
+                // this.benchmarkResults.push(runResults);
             } catch (err) {
                 console.error(err)
                 const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, undefined, err);
@@ -150,14 +150,14 @@ export class BenchmarkOrchestrator {
         return testConfig;
     }
 
-    private getBenchmarkTask(testConfig: IGlobalTestDef, runId: string, testDir: string, iterationDir: string): IBenchmarkTask {
+    private getBenchmarkTask(testConfig: IGlobalTestDef, runId: string, testDir: string, iterationDir: string): unknown {
         if (testConfig.benchmark_type === "dataset_quiz") {
-            return new DatasetQuizBenchmarkTask({
-                homeDir: testDir,
-                iterationDir,
-                runId,
-                params: testConfig.params
-            })
+            // return new DatasetQuizBenchmarkTask({
+            //     homeDir: testDir,
+            //     iterationDir,
+            //     runId,
+            //     params: testConfig.params
+            // })
         }
         throw new Error(`unknown benchmarkType "${testConfig.benchmark_type}"`)
     }

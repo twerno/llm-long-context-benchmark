@@ -1,91 +1,8 @@
-import { IQuizEntry } from "../benchmarks/datasetTest/DatasetTypes";
-import { IQuizData } from "../benchmarks/datasetTest/QuizDataUtils";
-import { AbstractBenchmarkRunner, IEvaluationRunData, IRunError, ITestData, ITestRunData } from "./AbstractBenchmarkRunner";
-
-interface IDatasetQuizTaskTestData extends ITestData {
-    quizData: IQuizData,
-    quizTest: IQuizEntry
-}
-
-interface IDatasetQuizTaskTestRunData extends ITestRunData { }
-
-interface IDatasetQuizTaskEvaluationRunData extends IEvaluationRunData { }
+import { AbstractBenchmarkRunner, IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
+import { IDatasetQuizTaskEvaluationRunData, IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData } from "./DatasetQuizBenchmarkTypes";
 
 
-class DatasetQuizTask extends AbstractBenchmarkRunner<IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData, IDatasetQuizTaskEvaluationRunData> {
-
-
-    protected mapTestSuccessResponse(data: IDatasetQuizTaskTestData, runData: ITestRunData): IDatasetQuizTaskTestRunData {
-        return runData;
-    }
-
-
-    protected async buildEvaluationPrompt(data: IDatasetQuizTaskTestData, testRunData: IDatasetQuizTaskTestRunData): Promise<string[]> {
-        const userPrompt = messageTemplate
-            .replace("<QUESTION>", data.quizTest.question)
-            .replace("<HINT>", data.quizTest.hint)
-            .replace("<ANSWER>", testRunData.llmAnswer);
-
-        return [
-            systemPrompt,
-            userPrompt
-        ]
-    }
-
-
-    protected async internalEvaluateLlmAnswer(data: IDatasetQuizTaskTestData, testRunData: IDatasetQuizTaskTestRunData, lllAnswer: string): Promise<boolean> {
-        return lllAnswer.includes("TRUE") && !lllAnswer.includes("FALSE");
-    }
-
-
-    protected mapEvaluationSuccessResponse(data: IDatasetQuizTaskTestData, runData: ITestRunData, evaluationRunData: IEvaluationRunData): IDatasetQuizTaskEvaluationRunData {
-        return evaluationRunData
-    }
-
-    public async extractDataToCsv(data: IDatasetQuizTaskTestData, testRun: IDatasetQuizTaskTestRunData | IRunError, evaluations: (IDatasetQuizTaskEvaluationRunData | IRunError)[]): Promise<object> {
-
-        const testRunCols = testRun.status === "OK"
-            ? {
-                testStatus: 1,
-                testError: "",
-                testPromptTokens: testRun.promptTokens,
-                testCompletionTokens: testRun.completionTokens,
-                testTotalTime: testRun.totalTime
-            }
-            : {
-                testStatus: 0,
-                testError: testRun.error,
-                testPromptTokens: 0,
-                testCompletionTokens: 0,
-                testTotalTime: 0
-            }
-
-        const evaluationTotalRuns = evaluations.length
-        const evaluationSuccessRuns = evaluations.filter(v => v.status === "OK" && v.evaluationResult).length
-        const evaluationErrors = evaluations.filter(v => v.status === "ERROR").length
-        const evaluationStatus = evaluationTotalRuns === 0
-            ? 0
-            : evaluationTotalRuns === evaluationSuccessRuns
-                ? 1
-                : 0
-        const evaluationTotalTime = evaluations.filter(v => v.status === "OK").reduce((prev, curr) => prev + curr.totalTime, 0)
-
-        return {
-            quizId: data.quizData.quizId,
-            ...testRunCols,
-            evaluationStatus,
-            evaluationSuccessRuns,
-            evaluationTotalRuns,
-            evaluationErrors,
-            evaluationTotalTime
-        }
-    }
-
-}
-
-
-
-const systemPrompt = `### ROLE
+const systemMessage = `### ROLE
 You are a strict grading assistant. Your task is to evaluate if the User's Answer is correct based on the provided Reference Information in response to the Question.
 
 ### EVALUATION RULES
@@ -102,7 +19,93 @@ Respond ONLY with one of these two words:
 
 Do not provide any explanations, notes, or extra text.`;
 
-const messageTemplate = `### DATA
+const userMessageTemplate = `### DATA
 - **Question:** "<QUESTION>"
 - **Reference Information (Correct Answer/Hint):** "<HINT>"
 - **User's Answer:** "<ANSWER>"`;
+
+
+export class DatasetQuizBenchmarkRunner extends AbstractBenchmarkRunner<IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData, IDatasetQuizTaskEvaluationRunData> {
+
+
+    protected mapTestSuccessResponse(data: IDatasetQuizTaskTestData, runData: ITestRunData): IDatasetQuizTaskTestRunData {
+        return runData;
+    }
+
+
+    protected async buildEvaluationPrompt(data: IDatasetQuizTaskTestData, testRunData: IDatasetQuizTaskTestRunData): Promise<string[]> {
+        const userPrompt = userMessageTemplate
+            .replace("<QUESTION>", data.quizTest.question)
+            .replace("<HINT>", data.quizTest.hint)
+            .replace("<ANSWER>", testRunData.llmAnswer);
+
+        return [
+            systemMessage,
+            userPrompt
+        ]
+    }
+
+
+    protected async internalEvaluateLlmAnswer(data: IDatasetQuizTaskTestData, testRunData: IDatasetQuizTaskTestRunData, lllAnswer: string): Promise<boolean> {
+        return lllAnswer.includes("TRUE") && !lllAnswer.includes("FALSE");
+    }
+
+
+    protected mapEvaluationSuccessResponse(data: IDatasetQuizTaskTestData, runData: ITestRunData, evaluationRunData: IEvaluationRunData): IDatasetQuizTaskEvaluationRunData {
+        return evaluationRunData
+    }
+
+    public async extractDataToCsv(data: IDatasetQuizTaskTestData, testRun: IDatasetQuizTaskTestRunData | IRunError, evaluations: (IDatasetQuizTaskEvaluationRunData | IRunError)[]): Promise<object> {
+
+        // test run
+        const testRunCols = testRun.status === "OK"
+            ? {
+                testStatus: 1,
+                testError: "",
+                testPromptTokens: testRun.promptTokens,
+                testCompletionTokens: testRun.completionTokens,
+                testTotalTime: testRun.totalTime
+            }
+            : {
+                testStatus: 0,
+                testError: testRun.error,
+                testPromptTokens: 0,
+                testCompletionTokens: 0,
+                testTotalTime: 0
+            }
+
+
+        // evaluation
+        const evaluationTotalRuns = evaluations.length
+        const evaluationSuccessRuns = evaluations.filter(v => v.status === "OK" && v.evaluationResult).length
+        const evaluationErrors = evaluations.filter(v => v.status === "ERROR").length
+        const evaluationStatus = evaluationTotalRuns === 0
+            ? 0
+            : evaluationTotalRuns === evaluationSuccessRuns
+                ? 1
+                : 0
+        const evaluationTotalTime = evaluations.filter(v => v.status === "OK").reduce((prev, curr) => prev + curr.totalTime, 0)
+
+
+        // quiz data
+        const { testIdx, quizTest } = data
+        const { questionInSetIdx: questionNo, type, questionSetIdx: questionSetNo } = quizTest
+
+        return {
+            ...testRunCols,
+            questionIdx: testIdx,
+            questionNo,
+            questionSetNo,
+            questionType: type,
+            evaluationStatus,
+            evaluationSuccessRuns,
+            evaluationTotalRuns,
+            evaluationErrors,
+            evaluationTotalTime
+        }
+    }
+
+}
+
+
+
