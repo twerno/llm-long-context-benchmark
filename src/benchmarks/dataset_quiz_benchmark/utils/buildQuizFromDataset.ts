@@ -17,7 +17,7 @@ export default function buildQuizFromDataset(dataset: ICountrySchema[], setIdx: 
         ...buildComplexQuestions(dataset, questionIdxGenerator, setIdx),
         ...buildTrickyQuestions(dataset, questionIdxGenerator, setIdx),
         ...buildImpossiblesQuestions(dataset, questionIdxGenerator, setIdx)
-    ];
+    ].filter((_, idx) => idx <= 2);
 }
 
 /**

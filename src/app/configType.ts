@@ -14,6 +14,7 @@ export type IBenchmarkType = z.infer<typeof ZQuizBenchmarkConfigSchema>['benchma
 
 export interface IBenchmarkTaskConfig {
     taskName: string;
+    runIdx: number,
     benchmark_llm: string;
     evaluation_llm: string;
     benchmark: string;

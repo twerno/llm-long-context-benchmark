@@ -54,7 +54,6 @@ export const ZBenchmarkConfigSchema = z.union([ZQuizBenchmarkConfigSchema, ZQuiz
 // ==========================
 
 export const ITaskConfigSchema = z.object({
-    task_name: z.string(),
     benchmark_llm: z.string(),
     evaluation_llm: z.string(),
     runs: z.number().int().positive().default(1),

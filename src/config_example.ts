@@ -20,6 +20,21 @@ export const example: IConfig = {
             executable_path: "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
             model_path: "D:/modele AI/LM Studio/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf",
             ctx_size: 8192,
+        },
+        "evaluator": {
+            type: "llamacpp",
+            executable_path: "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+            model_path: "D:/modele AI/LM Studio/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf",
+            ctx_size: 8192,
+            extra_flags: [
+                "--no-cache-prompt",
+                "--cache-ram",
+                "0",
+                "--gpu-layers",
+                "all",
+                "--no-mmap",
+                "--direct-io"
+            ]
         }
     },
     benchmarks_config: {
@@ -29,16 +44,29 @@ export const example: IConfig = {
                 datasetSetSize: 2,
                 questionsSetSize: 2
             }
+        },
+        "quiz_size_1_1": {
+            benchmark_type: "dataset_quiz",
+            params: {
+                datasetSetSize: 1,
+                questionsSetSize: 1
+            }
         }
     },
     tasks_config: [
         {
             benchmark_llm: "gemma-4-E4B-it-Q4_K_M",
-            evaluation_llm: "gemma-4-E4B-it-Q4_K_M",
-            benchmarks: ["quiz_size_2_2"],
-            evaluation_runs: 2,
+            evaluation_llm: "evaluator",
+            benchmarks: ["quiz_size_1_1"],
+            evaluation_runs: 1,
             runs: 2,
-            task_name: "aaa"
+        },
+        {
+            benchmark_llm: "Bielik-4.5B-v3.0-Instruct.Q8_0",
+            evaluation_llm: "evaluator",
+            benchmarks: ["quiz_size_1_1"],
+            evaluation_runs: 1,
+            runs: 2,
         }
     ]
 }

@@ -40,10 +40,11 @@ export class ConfigLoader {
         for (const benchmark of benchmarks) {
             for (let i = 0; i < benchmarkConfig.runs; i++) {
                 const taskName = `${benchmark}_${benchmarkConfig.benchmark_llm}`;
-                const idx = tasksNames[taskName] ?? 0;
+                const idx = tasksNames[taskName] ?? 1;
 
                 result.push({
                     benchmark,
+                    runIdx: i,
                     benchmark_llm: benchmarkConfig.benchmark_llm,
                     evaluation_llm: benchmarkConfig.evaluation_llm,
                     taskName: `${taskName}_${idx}`,
