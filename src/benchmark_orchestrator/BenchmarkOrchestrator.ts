@@ -1,6 +1,6 @@
 import path from "node:path";
 import { IConfigLoaderResult } from "../app/ConfigLoader";
-import { IBenchmarkTaskConfig } from "../app/configType";
+import { IBenchmarkConfigMap, IBenchmarkTaskConfig } from "../app/configType";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
 import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
 import FileUtils from "../utils/FileUtils";
@@ -27,19 +27,24 @@ export class BenchmarkOrchestrator {
 
         console.log(`Starting benchmark session: ${this.rootDir}`);
 
+        const taskSummaryList: ITaskSummary[] = []
+
         // 2. Iterate through tests
         for (const task of this.options.config.tasks) {
             try {
-                await this.runTask(task);
+                const taskSummary = await this.runTask(task);
+                taskSummaryList.push(taskSummary)
             }
             catch (err) {
                 console.error(err)
             }
         }
 
+        // 3. write summary
+        this.buildAndSaveSummary(taskSummaryList)
     }
 
-    private async runTask(task: IBenchmarkTaskConfig): Promise<void> {
+    private async runTask(task: IBenchmarkTaskConfig): Promise<ITaskSummary> {
         const { taskName } = task;
         const { benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner, benchmarkRunHomeDir } = this.prepareTask(task);
 
@@ -58,10 +63,12 @@ export class BenchmarkOrchestrator {
         const evaluationResults = await this.evaluateAnswers(testResults, runner, evaluationLlmRunner);
 
         // build summary
-        const summary = await this.buildTaskSummary(evaluationResults, runner);
+        const summary = await this.buildTaskSummary(task, benchmarkDataBuilderProps, evaluationResults, runner);
         FileUtils.saveAsCsv(benchmarkRunHomeDir, `${FileUtils.toSafeFilename(taskName)}.csv`, summary);
 
         console.log(`[DONE] Running task: ${taskName}`);
+
+        return { task, summary };
     }
 
     private getLLMRunner(llmConfigName: string): IManageableLLMRunner {
@@ -173,14 +180,35 @@ export class BenchmarkOrchestrator {
         return results;
     }
 
-    private async buildTaskSummary(results: IEvaluationResult[], benchmarkRunner: IAbstractBenchmarkRunner<ITestData, ITestRunData, IEvaluationRunData>): Promise<object[]> {
+    private async buildTaskSummary(task: IBenchmarkTaskConfig, benchmarkProps: IBenchmarkConfigMap[string], results: IEvaluationResult[], benchmarkRunner: IAbstractBenchmarkRunner<ITestData, ITestRunData, IEvaluationRunData>): Promise<object[]> {
         const summaryList: object[] = []
         for (const { testData, testRunResult, evaluationResult } of results) {
+            const metadata = {
+                ...task,
+                ...benchmarkProps
+            }
             const summary = await benchmarkRunner.extractDataToCsv(testData, testRunResult, evaluationResult);
-            summaryList.push(summary);
+            summaryList.push({ ...metadata, ...summary });
         }
 
         return summaryList;
+    }
+
+
+    private buildAndSaveSummary(taskSummaryList: ITaskSummary[]) {
+        const groupByBenchmarkType: Record<string, object[]> = {}
+
+        for (const taskSummary of taskSummaryList) {
+            let benchmarkType: string = this.options.config.benchmarkMap[taskSummary.task.benchmark].benchmark_type
+            benchmarkType = FileUtils.toSafeFilename(benchmarkType);
+            const group = groupByBenchmarkType[benchmarkType] ?? []
+            group.push(...taskSummary.summary);
+            groupByBenchmarkType[benchmarkType] = group
+        }
+
+        for (const [benchmarkType, rows] of Object.entries(groupByBenchmarkType)) {
+            FileUtils.saveAsCsv(this.rootDir, `${benchmarkType}.csv`, rows)
+        }
     }
 
 }
@@ -194,4 +222,9 @@ interface IEvaluationResult {
     testData: ITestData,
     testRunResult: ITestRunData | IRunError,
     evaluationResult: Array<IEvaluationRunData | IRunError>
+}
+
+type ITaskSummary = {
+    task: IBenchmarkTaskConfig,
+    summary: object[]
 }
