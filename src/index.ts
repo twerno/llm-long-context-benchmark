@@ -4,7 +4,8 @@ import { example } from "./config_example"
 
 async function run() {
     const configPath = `./config.json`
-    const config = ConfigLoader.load(example)
+    const configJson= ConfigLoader.readFile(configPath)
+    const config = ConfigLoader.load(configJson)
     const orchestrator = new BenchmarkOrchestrator({ config })
     await orchestrator.run()
 }
