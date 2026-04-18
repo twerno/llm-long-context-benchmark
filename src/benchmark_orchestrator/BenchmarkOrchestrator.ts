@@ -2,7 +2,7 @@ import path from "node:path";
 import { IConfigLoaderResult } from "../app/ConfigLoader";
 import { IBenchmarkConfigMap, IBenchmarkTaskConfig } from "../app/configType";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
-import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
+import { DummyLLMRunner, LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
 import FileUtils from "../utils/FileUtils";
 import { IAbstractBenchmarkRunner, IBenchmarkRunnerConfig, IEvaluationRunData, IRunError, ITestData, ITestRunData } from "./AbstractBenchmarkRunner";
 import { buildBenchmarkData, buildBenchmarkRunner } from "./benchmarkDef";
@@ -81,6 +81,7 @@ export class BenchmarkOrchestrator {
         switch (config.type) {
             case "llamacpp": return new LlamaServerRunner(config);
             case "openAICompatible": return new ManageableLLMRunnerWrapper(config.url);
+            case "offline": return new DummyLLMRunner()
         }
     }
 

@@ -35,21 +35,31 @@ export const example: IConfig = {
                 "--no-mmap",
                 "--direct-io"
             ]
+        },
+        "offline": {
+            type: "offline"
         }
     },
     benchmarks_config: {
         "quiz_size_2_2": {
             benchmark_type: "dataset_quiz",
             params: {
-                datasetSetSize: 2,
-                questionsSetSize: 2
+                dataset_set_size: 2,
+                questions_set_size: 2
             }
         },
         "quiz_size_1_1": {
             benchmark_type: "dataset_quiz",
             params: {
-                datasetSetSize: 1,
-                questionsSetSize: 1
+                dataset_set_size: 1,
+                questions_set_size: 1
+            }
+        },
+        "secrets_1_1": {
+            benchmark_type: "hidden_phrase",
+            params: {
+                text_length: 1000,
+                no_of_hidden_phrases: 100
             }
         }
     },
@@ -59,14 +69,14 @@ export const example: IConfig = {
             evaluation_llm: "evaluator",
             benchmarks: ["quiz_size_1_1"],
             evaluation_runs: 1,
-            runs: 2,
+            runs: 1,
         },
         {
-            benchmark_llm: "Bielik-4.5B-v3.0-Instruct.Q8_0",
-            evaluation_llm: "evaluator",
-            benchmarks: ["quiz_size_1_1"],
+            benchmark_llm: "gemma-4-E4B-it-Q4_K_M",
+            evaluation_llm: "offline",
+            benchmarks: ["secrets_1_1"],
             evaluation_runs: 1,
-            runs: 2,
+            runs: 1,
         }
     ]
 }

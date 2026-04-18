@@ -51,18 +51,13 @@ export interface IAbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DATA e
 }
 
 
-
 export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DATA extends ITestRunData, EV_DATA_RUN extends IEvaluationRunData = IEvaluationRunData> implements IAbstractBenchmarkRunner<T_DATA, T_RUN_DATA, EV_DATA_RUN> {
-
     public constructor(protected readonly props: IBenchmarkRunnerConfig) { }
 
+    public abstract evaluateTest(llmRunner: ILLMRunner, data: T_DATA, testRun: T_RUN_DATA): Promise<(IRunError | EV_DATA_RUN)[]>
+    public abstract extractDataToCsv(data: T_DATA, testRun: IRunError | T_RUN_DATA, evaluations: (IRunError | EV_DATA_RUN)[]): Promise<object>
+
     protected abstract mapTestSuccessResponse(data: T_DATA, runData: ITestRunData): T_RUN_DATA;
-    protected abstract buildEvaluationPrompt(data: T_DATA, testRunData: T_RUN_DATA): Promise<string[]>
-    protected abstract internalEvaluateLlmAnswer(data: T_DATA, testRunData: T_RUN_DATA, lllAnswer: string): Promise<boolean>
-    protected abstract mapEvaluationSuccessResponse(data: T_DATA, runData: ITestRunData, evaluationRunData: IEvaluationRunData): EV_DATA_RUN;
-
-    public abstract extractDataToCsv(data: T_DATA, testRun: T_RUN_DATA | IRunError, evaluations: Array<EV_DATA_RUN | IRunError>): Promise<object>;
-
 
     public async runTest(llmRunner: ILLMRunner, data: T_DATA): Promise<T_RUN_DATA | IRunError> {
 
@@ -92,6 +87,32 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
         }
     }
 
+    protected async sendRequest2Llm(runner: ILLMRunner, requestBody: ILLMRunnerProps) {
+        const resp = await runner.run(requestBody)
+        const llmAnswer = resp.output[0] ?? ""
+        const { promptTokens, completionTokens, totalTime } = resp;
+        return {
+            promptTokens,
+            completionTokens,
+            totalTime,
+            llmAnswer
+        }
+    }
+
+    protected mapTestError(data: T_DATA, error: string): IRunError {
+        return {
+            status: "ERROR",
+            error
+        }
+    }
+}
+
+export abstract class AbstractBenchmarkRunnerAndEvaluator<T_DATA extends ITestData, T_RUN_DATA extends ITestRunData, EV_DATA_RUN extends IEvaluationRunData = IEvaluationRunData> extends AbstractBenchmarkRunner<T_DATA, T_RUN_DATA, EV_DATA_RUN> {
+
+    protected abstract mapTestSuccessResponse(data: T_DATA, runData: ITestRunData): T_RUN_DATA;
+    protected abstract buildEvaluationPrompt(data: T_DATA, testRunData: T_RUN_DATA): Promise<string[]>
+    protected abstract internalEvaluateLlmAnswer(data: T_DATA, testRunData: T_RUN_DATA, lllAnswer: string): Promise<boolean>
+    protected abstract mapEvaluationSuccessResponse(data: T_DATA, runData: ITestRunData, evaluationRunData: IEvaluationRunData): EV_DATA_RUN;
 
     public async evaluateTest(llmRunner: ILLMRunner, data: T_DATA, testRunData: T_RUN_DATA): Promise<Array<EV_DATA_RUN | IRunError>> {
 
@@ -132,28 +153,6 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
         } catch (err) {
             console.error(err)
             return this.mapEvaluationError(data, testRunData, JSON.stringify((err as any)?.message ?? err));
-        }
-    }
-
-
-
-    private async sendRequest2Llm(runner: ILLMRunner, requestBody: ILLMRunnerProps) {
-        const resp = await runner.run(requestBody)
-        const llmAnswer = resp.output[0] ?? ""
-        const { promptTokens, completionTokens, totalTime } = resp;
-        return {
-            promptTokens,
-            completionTokens,
-            totalTime,
-            llmAnswer
-        }
-    }
-
-
-    protected mapTestError(data: T_DATA, error: string): IRunError {
-        return {
-            status: "ERROR",
-            error
         }
     }
 

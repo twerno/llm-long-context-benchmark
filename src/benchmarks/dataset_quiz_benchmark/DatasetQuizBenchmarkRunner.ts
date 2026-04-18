@@ -1,4 +1,4 @@
-import { AbstractBenchmarkRunner, IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
+import { AbstractBenchmarkRunner, AbstractBenchmarkRunnerAndEvaluator, IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
 import { IDatasetQuizTaskEvaluationRunData, IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData } from "./datasetQuizBenchmarkTypes";
 
 
@@ -25,7 +25,7 @@ const userMessageTemplate = `### DATA
 - **User's Answer:** "<ANSWER>"`;
 
 
-export class DatasetQuizBenchmarkRunner extends AbstractBenchmarkRunner<IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData, IDatasetQuizTaskEvaluationRunData> {
+export class DatasetQuizBenchmarkRunner extends AbstractBenchmarkRunnerAndEvaluator<IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData, IDatasetQuizTaskEvaluationRunData> {
 
 
     protected mapTestSuccessResponse(data: IDatasetQuizTaskTestData, runData: ITestRunData): IDatasetQuizTaskTestRunData {

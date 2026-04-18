@@ -9,6 +9,10 @@ export const ZOpenAiCompatibleSchema = z.object({
     url: z.url(),
 });
 
+export const ZOfflineRunnerSchema = z.object({
+    type: z.literal("offline"),
+});
+
 export const ZLlamaRunnerSchema = z.object({
     type: z.literal("llamacpp"),
     executable_path: z.string(),
@@ -24,15 +28,15 @@ export const ZLlamaRunnerSchema = z.object({
     extra_flags: z.array(z.string()).optional()
 });
 
-const ZLlmRunnerSpecSchema = z.union([ZOpenAiCompatibleSchema, ZLlamaRunnerSchema])
+const ZLlmRunnerSpecSchema = z.union([ZOpenAiCompatibleSchema, ZLlamaRunnerSchema, ZOfflineRunnerSchema])
 
 // ==========================
 // BENCHMARK
 // ==========================
 
 export const ZQuizTestParamsSchema = z.object({
-    datasetSetSize: z.number().positive(),
-    questionsSetSize: z.number().positive()
+    dataset_set_size: z.number().positive(),
+    questions_set_size: z.number().positive()
 })
 
 export const ZQuizBenchmarkConfigSchema = z.object({
@@ -41,13 +45,18 @@ export const ZQuizBenchmarkConfigSchema = z.object({
     params: ZQuizTestParamsSchema
 })
 
-export const ZQuiz2BenchmarkConfigSchema = z.object({
-    benchmark_type: z.literal("dataset_quiz2"),
-
-    params: z.string()
+export const ZHiddenPhrasesParamsSchema = z.object({
+    text_length: z.number().positive(),
+    no_of_hidden_phrases: z.number().positive()
 })
 
-export const ZBenchmarkConfigSchema = z.union([ZQuizBenchmarkConfigSchema, ZQuiz2BenchmarkConfigSchema])
+export const ZHiddenPhrasesBenchmarkConfigSchema = z.object({
+    benchmark_type: z.literal("hidden_phrase"),
+
+    params: ZHiddenPhrasesParamsSchema
+})
+
+export const ZBenchmarkConfigSchema = z.union([ZQuizBenchmarkConfigSchema, ZHiddenPhrasesBenchmarkConfigSchema])
 
 // ==========================
 // TASK
