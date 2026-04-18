@@ -1,1 +1,2 @@
+- pytania lista tagów zamiast pojedynczego
 - dopisać taski dla pozostałych testów

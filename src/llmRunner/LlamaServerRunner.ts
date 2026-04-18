@@ -1,5 +1,5 @@
 import { ChildProcess, spawn } from 'child_process';
-import { ILlamaRunner } from '../benchmark_orchestrator/configTypes';
+import { ILlamaRunner } from '../app/configType';
 import type { ILLMRunnerOutput, ILLMRunnerProps, IManageableLLMRunner } from './ILLMRunner';
 import { OpenAICompatibleApiLlmRunner } from './OpenAICompatibleApiLlmRunner';
 
@@ -106,4 +106,10 @@ export class ManageableLLMRunnerWrapper implements IManageableLLMRunner {
     public async run(props: ILLMRunnerProps): Promise<ILLMRunnerOutput> {
         return this.apiRunner.run(props);
     }
+}
+
+export class DummyLLMRunner implements IManageableLLMRunner {
+    public start() { return Promise.resolve() }
+    public stop() { return Promise.resolve() }
+    public run(props: ILLMRunnerProps) { return Promise.resolve<ILLMRunnerOutput>({ output: [], completionTokens: 0, promptTokens: 0, totalTime: 0, totalTokens: 0 }) }
 }

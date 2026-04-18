@@ -1,10 +1,12 @@
-import { TestOrchestratorRunner } from "./benchmark_orchestrator/TestOrchestratorRunner"
-import { ConfigLoader } from "./benchmark_orchestrator/ConfigLoader"
+import { ConfigLoader } from "./app/ConfigLoader"
+import { BenchmarkOrchestrator } from "./benchmark_orchestrator/BenchmarkOrchestrator"
+import { example } from "./config_example"
 
 async function run() {
     const configPath = `./config.json`
-    const { tasks, globalConfigs } = ConfigLoader.load(configPath)
-    const orchestrator = new TestOrchestratorRunner({ tasks, globalConfigs })
+    const configJson= ConfigLoader.readFile(configPath)
+    const config = ConfigLoader.load(configJson)
+    const orchestrator = new BenchmarkOrchestrator({ config })
     await orchestrator.run()
 }
 

@@ -78,8 +78,13 @@
             "benchmark_llm": "Qwen3-4B-Instruct-2507-Q4_K_M",
             "evaluation_llm": "evaluator_quick",
             "runs": 1,
-            "test": "quiz_size_1_1",
-            "name": "Qwen3-4B-Instruct-2507-Q4_K_M_quiz_size_1_1"
+            "test": "quiz_size_1_1"
+        },
+        {
+            "benchmark_llm": "Bielik-4.5B-v3.0-Instruct.Q8_0",
+            "evaluation_llm": "evaluator_quick",
+            "runs": 2,
+            "test": "quiz_size_1_1"
         }
     ]
 }

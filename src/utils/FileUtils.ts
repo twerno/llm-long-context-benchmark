@@ -1,7 +1,17 @@
-import { existsSync, mkdirSync, writeFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, statSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 export default {
+    toSafeFilename(input: string): string {
+        return input
+            .normalize("NFKD")                 // rozbija np. "ł" → "l"
+            .replace(/[\u0300-\u036f]/g, "")   // usuwa diakrytyki
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, "") // niedozwolone znaki (Windows)
+            .replace(/\s+/g, "_")              // spacje → _
+            .replace(/\.+$/, "")               // usuń kropki na końcu
+            .trim();
+    },
+
     createDirectorySafe(dirPath: string) {
         if (!existsSync(dirPath)) {
             mkdirSync(dirPath, { recursive: true });
@@ -11,6 +21,11 @@ export default {
     writeFile(dirPath: string, filename: string, message: string) {
         this.createDirectorySafe(dirPath);
         writeFileSync(path.join(dirPath, filename), message)
+    },
+
+    readFile(dirPath: string, filename: string) {
+        const filepath = path.join(dirPath, filename)
+        return readFileSync(filepath, { encoding: "utf-8" })
     },
 
     directoryExist(dirPath: string) {
@@ -23,6 +38,22 @@ export default {
                 return false
             }
             throw new Error(`${dirPath} Exists, but is not a directory.`)
+        } catch (err) {
+            return false;
+        }
+    },
+
+    fileExist(dirPath: string, filename: string) {
+        try {
+            const filepath = path.join(dirPath, filename)
+            const stats = statSync(filepath);
+            if (stats && stats.isFile()) {
+                return true;
+            }
+            if (!stats) {
+                return false
+            }
+            throw new Error(`${filepath} Exists, but is not a file.`)
         } catch (err) {
             return false;
         }

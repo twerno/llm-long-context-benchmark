@@ -1,7 +1,8 @@
-import { IBenchmarkConfig } from "./benchmark_orchestrator/configTypes";
+import { IConfig } from "./app/configType";
 
-const example: IBenchmarkConfig = {
-    global_llms: {
+
+export const example: IConfig = {
+    llms_config: {
         "google_gemma-4-26B-A4B-it-Q4_K_S": {
             type: "llamacpp",
             executable_path: "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
@@ -13,25 +14,69 @@ const example: IBenchmarkConfig = {
             executable_path: "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
             model_path: "D:/modele AI/LM Studio/speakleash/Bielik-4.5B-v3.0-Instruct-GGUF/Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
             ctx_size: 8192,
+        },
+        "gemma-4-E4B-it-Q4_K_M": {
+            type: "llamacpp",
+            executable_path: "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+            model_path: "D:/modele AI/LM Studio/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf",
+            ctx_size: 8192,
+        },
+        "evaluator": {
+            type: "llamacpp",
+            executable_path: "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+            model_path: "D:/modele AI/LM Studio/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf",
+            ctx_size: 8192,
+            extra_flags: [
+                "--no-cache-prompt",
+                "--cache-ram",
+                "0",
+                "--gpu-layers",
+                "all",
+                "--no-mmap",
+                "--direct-io"
+            ]
+        },
+        "offline": {
+            type: "offline"
         }
     },
-    global_test_definitions: {
+    benchmarks_config: {
         "quiz_size_2_2": {
             benchmark_type: "dataset_quiz",
             params: {
-                datasetSetSize: 2,
-                evaluationStepRuns: 2,
-                questionsSetSize: 2
+                dataset_set_size: 2,
+                questions_set_size: 2
+            }
+        },
+        "quiz_size_1_1": {
+            benchmark_type: "dataset_quiz",
+            params: {
+                dataset_set_size: 1,
+                questions_set_size: 1
+            }
+        },
+        "secrets_1_1": {
+            benchmark_type: "hidden_phrase",
+            params: {
+                text_length: 1000,
+                no_of_hidden_phrases: 100
             }
         }
     },
-    tests: [
+    tasks_config: [
         {
-            benchmark_llm: "Bielik-4.5B-v3.0-Instruct.Q8_0",
-            evaluation_llm: "google_gemma-4-26B-A4B-it-Q4_K_S",
-            runs: 3,
-            test: "quiz_size_2_2",
-            name: "Bielik-4.5B_quiz_size_2_2"
+            benchmark_llm: "gemma-4-E4B-it-Q4_K_M",
+            evaluation_llm: "evaluator",
+            benchmarks: ["quiz_size_1_1"],
+            evaluation_runs: 1,
+            runs: 1,
+        },
+        {
+            benchmark_llm: "gemma-4-E4B-it-Q4_K_M",
+            evaluation_llm: "offline",
+            benchmarks: ["secrets_1_1"],
+            evaluation_runs: 1,
+            runs: 1,
         }
     ]
 }

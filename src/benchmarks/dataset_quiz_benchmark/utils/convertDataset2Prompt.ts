@@ -1,4 +1,4 @@
-import type { ICountrySchema, IFact, IProvince } from "./datasetGenerator/FantasyCountryDatasetTypes";
+import type { ICountrySchema, IFact, IProvince } from "../dataset_generator/FantasyCountryDatasetTypes";
 import DatasetUtils from "./DatasetUtils";
 
 
@@ -12,7 +12,7 @@ const joinList = DatasetUtils.joinList;
  * @param country - The country schema to convert.
  * @returns A formatted string representing the country's information.
  */
-export default function convertFantasyCountryDataset2Prompt(country: ICountrySchema): string {
+export default function convertDataset2Prompt(country: ICountrySchema): string {
     const result = [
         `# The country name is **"${country.name}"**.`,
         `Its state system is ${country.stateSystem} and it is ruled by ${country.ruler}.`,
