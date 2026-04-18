@@ -8,3 +8,4 @@ export interface IDatasetQuizTaskTestData extends ITestData {
 export interface IDatasetQuizTaskTestRunData extends ITestRunData { }
 
 export interface IDatasetQuizTaskEvaluationRunData extends IEvaluationRunData { }
+
