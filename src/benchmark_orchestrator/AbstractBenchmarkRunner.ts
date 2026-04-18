@@ -3,16 +3,7 @@ import FileUtils from "../utils/FileUtils"
 
 export interface IBenchmarkRunnerConfig {
     benchmarkType: string,
-    benchmarkLlm: {
-        name: string,
-        runner: ILLMRunner
-    },
-    evaluationLlm: {
-        name: string,
-        runner: ILLMRunner
-    },
     logDir: string,
-    benchmarkRuns: number,
     evaluationRuns: number
 }
 
@@ -44,18 +35,17 @@ export type IRunError = {
     error: string
 }
 
-
-export interface IBenchmarkDataBuilder<T_PARAMS, T_DATA extends ITestData> {
-    buildBenchmarkTestsData(params: T_PARAMS): Promise<T_DATA[]>
+export type IBuildBenchmarkTestsDataFnParams = {
+    logDir: string,
 }
 
-
+export type IBuildBenchmarkTestsDataFn<T_PARAMS extends IBuildBenchmarkTestsDataFnParams, T_DATA extends ITestData> = (params: T_PARAMS) => Promise<T_DATA[]>
 
 export interface IAbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DATA extends ITestRunData, EV_DATA_RUN extends IEvaluationRunData = IEvaluationRunData> {
 
-    runTest(data: T_DATA): Promise<T_RUN_DATA | IRunError>
+    runTest(llmRunner: ILLMRunner, data: T_DATA): Promise<T_RUN_DATA | IRunError>
 
-    evaluateTest(data: T_DATA, testRun: T_RUN_DATA): Promise<Array<EV_DATA_RUN | IRunError>>
+    evaluateTest(llmRunner: ILLMRunner, data: T_DATA, testRun: T_RUN_DATA): Promise<Array<EV_DATA_RUN | IRunError>>
 
     extractDataToCsv(data: T_DATA, testRun: T_RUN_DATA | IRunError, evaluations: Array<EV_DATA_RUN | IRunError>): Promise<object>
 }
@@ -74,14 +64,14 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
     public abstract extractDataToCsv(data: T_DATA, testRun: T_RUN_DATA | IRunError, evaluations: Array<EV_DATA_RUN | IRunError>): Promise<object>;
 
 
-    public async runTest(data: T_DATA): Promise<T_RUN_DATA | IRunError> {
+    public async runTest(llmRunner: ILLMRunner, data: T_DATA): Promise<T_RUN_DATA | IRunError> {
 
         try {
             const requestBody: ILLMRunnerProps = { messages: [] }
             data.systemPrompt.forEach(content => requestBody.messages.push({ role: "system", content }));
             data.userPrompt.forEach(content => requestBody.messages.push({ role: "user", content }));
 
-            const resp = await this.sendRequest2Llm(this.props.benchmarkLlm.runner, requestBody);
+            const resp = await this.sendRequest2Llm(llmRunner, requestBody);
             const { completionTokens, llmAnswer, promptTokens, totalTime } = resp;
 
             if (this.props.logDir) {
@@ -103,7 +93,7 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
     }
 
 
-    public async evaluateTest(data: T_DATA, testRunData: T_RUN_DATA): Promise<Array<EV_DATA_RUN | IRunError>> {
+    public async evaluateTest(llmRunner: ILLMRunner, data: T_DATA, testRunData: T_RUN_DATA): Promise<Array<EV_DATA_RUN | IRunError>> {
 
         const result: Array<EV_DATA_RUN | IRunError> = [];
         const requestBody: ILLMRunnerProps = { messages: [] }
@@ -111,7 +101,7 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
         prompts.forEach(content => requestBody.messages.push({ role: "user", content }));
 
         for (let i = 0; i < this.props.evaluationRuns; i++) {
-            const tmp = await this.internalEvaluateTest(data, testRunData, requestBody, i)
+            const tmp = await this.internalEvaluateTest(llmRunner, data, testRunData, requestBody, i)
             result.push(tmp);
         }
 
@@ -119,9 +109,9 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
     }
 
 
-    private async internalEvaluateTest(data: T_DATA, testRunData: T_RUN_DATA, requestBody: ILLMRunnerProps, iterationIdx: number): Promise<EV_DATA_RUN | IRunError> {
+    private async internalEvaluateTest(llmRunner: ILLMRunner, data: T_DATA, testRunData: T_RUN_DATA, requestBody: ILLMRunnerProps, iterationIdx: number): Promise<EV_DATA_RUN | IRunError> {
         try {
-            const resp = await this.sendRequest2Llm(this.props.evaluationLlm.runner, requestBody);
+            const resp = await this.sendRequest2Llm(llmRunner, requestBody);
             const { completionTokens, llmAnswer, promptTokens, totalTime } = resp;
 
             const evaluationResult = await this.internalEvaluateLlmAnswer(data, testRunData, llmAnswer);

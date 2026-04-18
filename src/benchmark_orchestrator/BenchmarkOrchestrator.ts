@@ -1,13 +1,15 @@
 import path from "node:path";
-import { IGlobalConfig, IGlobalTestDef, IInternalTestConfigWrapper } from "../app/configType";
+import { IConfigLoaderResult } from "../app/ConfigLoader";
+import { IBenchmarkTaskConfig } from "../app/configType";
 import { IManageableLLMRunner } from "../llmRunner/ILLMRunner";
 import { LlamaServerRunner, ManageableLLMRunnerWrapper } from "../llmRunner/LlamaServerRunner";
 import FileUtils from "../utils/FileUtils";
+import { IAbstractBenchmarkRunner, IBenchmarkRunnerConfig, IEvaluationRunData, IRunError, ITestData, ITestRunData } from "./AbstractBenchmarkRunner";
+import { buildBenchmarkData, buildBenchmarkRunner } from "./benchmarkDef";
 
 
 export interface OrchestratorOptions {
-    tasks: IInternalTestConfigWrapper[];
-    globalConfigs: IGlobalConfig;
+    config: IConfigLoaderResult
     rootDir?: string,
     testId?: string; // Katalog główny wyników
 }
@@ -28,165 +30,188 @@ export class BenchmarkOrchestrator {
         console.log(`Starting benchmark session: ${this.rootDir}`);
 
         // 3. Iterate through tests
-        for (const testConfig of this.options.tasks) {
+        for (const task of this.options.config.tasks) {
             try {
-                await this.runTest(testConfig);
+                await this.runTask(task);
             }
             catch (err) {
                 console.error(err)
             }
         }
 
-        // --- PERSIST EVALUATION RESULTS ---
-        const resultsCombinedByType = this.benchmarkResults
-            .reduce((prev, curr) => ({
-                ...prev,
-                [curr.benchmark_type]: [...(prev[curr.benchmark_type] ?? []), ...curr.results]
-            }), {} as Record<string, IBenchmarkResult[]>)
-        Object.entries(resultsCombinedByType)
-            .forEach(([key, val]) => FileUtils.saveAsCsv(this.rootDir, `${key}.csv`, val));
+        // // --- PERSIST EVALUATION RESULTS ---
+        // const resultsCombinedByType = this.benchmarkResults
+        //     .reduce((prev, curr) => ({
+        //         ...prev,
+        //         [curr.benchmark_type]: [...(prev[curr.benchmark_type] ?? []), ...curr.results]
+        //     }), {} as Record<string, IBenchmarkResult[]>)
+        // Object.entries(resultsCombinedByType)
+        //     .forEach(([key, val]) => FileUtils.saveAsCsv(this.rootDir, `${key}.csv`, val));
     }
 
-    private async runTest(testConfigWrapper: IInternalTestConfigWrapper): Promise<void> {
-        const testName = this.getTestName(testConfigWrapper);
-        const testHomeDir = path.join(this.rootDir, testConfigWrapper.test);
-        const testDir = path.join(this.rootDir, testConfigWrapper.test, testName);
-
-        FileUtils.createDirectorySafe(testDir);
-        console.log(`[START] Running test: ${testName}`);
-
-        const testConfig = this.getTestConfig(testConfigWrapper);
-
-        for (let i = 0; i < testConfigWrapper.runs; i++) {
-            const iterationId = `iteration_${i + 1}`;
-            const iterationDir = path.join(testDir, iterationId);
-
-            // 4. Check for Resume/Checkpointing
-            if (FileUtils.directoryExist(iterationDir)) {
-                console.log(`[SKIP] Test ${testName} already exists in ${iterationDir}. Skipping.`);
-                continue;
-            }
-            FileUtils.createDirectorySafe(iterationDir);
-            const runId = `${testName}_${iterationId}`
-            try {
-                const task: unknown = this.getBenchmarkTask(testConfig, runId, testHomeDir, iterationDir)
-
-                // // --- BENCHMARK STEP ---
-                // const benchmarkLLMRunner = await this.getLLMRunner(testConfigWrapper.benchmark_llm);
-                // try {
-                //     console.log(`  [${iterationId}] Running benchmark...`);
-                //     await task.run(benchmarkLLMRunner)
-                // } finally {
-                //     await this.cleanupLLMRunner(benchmarkLLMRunner);
-                // }
-
-                // // --- EVALUATION STEP ---
-                // const evalRunner = await this.getLLMRunner(testConfigWrapper.evaluation_llm);
-                // try {
-                //     console.log(`  [${iterationId}] Running evaluation...`);
-                //     await task.evaluate(evalRunner)
-                // } finally {
-                //     await this.cleanupLLMRunner(evalRunner);
-                // }
-
-                // // --- PERSIST EVALUATION RESULTS ---
-                // const evaluationResults = await task.getEvaluationResults()
-                // const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, evaluationResults, undefined);
-                // this.benchmarkResults.push(runResults);
-            } catch (err) {
-                console.error(err)
-                const runResults = this.saveResults(testConfigWrapper, i + 1, iterationDir, runId, undefined, err);
-                this.benchmarkResults.push(runResults);
-                FileUtils.writeFile(iterationDir, "error.txt", `error\n` + JSON.stringify(err, null, 2))
-            }
-        }
-
-        const combinedResults = this.benchmarkResults
-            .filter(v => v.benchmrk_run_name === testName && v.benchmark_type === testConfigWrapper.test)
-            .reduce((prev, curr) => [...prev, ...curr.results], [] as IBenchmarkResult[])
-        FileUtils.saveAsCsv(testHomeDir, `results.csv`, combinedResults);
-        console.log(`[FINISH] Completed test: ${this.getTestName(testConfigWrapper)}`);
-    }
-
-    private async getLLMRunner(definition: string): Promise<IManageableLLMRunner> {
+    private getLLMRunner(llmConfigName: string): IManageableLLMRunner {
         // Resolve definition to actual runner instance
+        const config = this.options.config.llmMap[llmConfigName]
 
-        const runnerSpec = this.options.globalConfigs.global_llms[definition];
-        if (!runnerSpec)
-            throw new Error(`Not Found runnerId="${definition}"`)
+        if (!config)
+            throw new Error(`Not Found llm config="${llmConfigName}"`)
 
-        // Instantiate runner based on type
-        if (runnerSpec.type === "llamacpp") {
-            const runner = new LlamaServerRunner(runnerSpec);
-            await runner.start();
-            return runner;
-        } else if (runnerSpec.type === "openAICompatible") {
-            return new ManageableLLMRunnerWrapper(runnerSpec.url);
-        }
-
-        throw new Error(`Unknown runner type: ${JSON.stringify(runnerSpec)}`);
-    }
-
-    private async cleanupLLMRunner(runner: IManageableLLMRunner): Promise<void> {
-        // Only stop if it's a manageable runner (like LlamaServerRunner)
-        if (typeof runner.stop === "function") {
-            await runner.stop();
+        switch (config.type) {
+            case "llamacpp": return new LlamaServerRunner(config);
+            case "openAICompatible": return new ManageableLLMRunnerWrapper(config.url);
         }
     }
 
-    private getTestName(testConfig: IInternalTestConfigWrapper): string {
-        const testName = testConfig.name ?? `${testConfig.benchmark_llm}__${testConfig.test}__${testConfig.runs}`
-        if (!this.benchmarkResults.find(v => v.benchmrk_run_name === testName && v.benchmark_type === testConfig.test)) {
-            return testName;
+    private prepareTask(task: IBenchmarkTaskConfig) {
+
+        // task directory
+        const benchmarkHomeDir = path.join(this.rootDir, task.benchmark);
+        const taskHomeDir = path.join(benchmarkHomeDir, task.taskName);
+        FileUtils.createDirectorySafe(taskHomeDir);
+
+        // benchmark test builder properties
+        const benchmarkDataBuilderProps = this.options.config.benchmarkMap[task.benchmark]
+
+        // llm runners
+        const benchmarkLlmRunner = this.getLLMRunner(task.benchmark_llm);
+        const evaluationLlmRunner = this.getLLMRunner(task.evaluation_llm);
+
+        // benchmark properties
+        const runnerProps: IBenchmarkRunnerConfig = {
+            benchmarkType: benchmarkDataBuilderProps.benchmark_type,
+            evaluationRuns: task.evaluationRuns,
+            logDir: path.join(taskHomeDir, "log")
         }
 
-        return `${testName}_${new Date().toISOString().replace(/[:.]/g, "_")}`
+        return { benchmarkHomeDir, taskHomeDir, benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner }
     }
 
-    private getTestConfig(testConfigWrapper: IInternalTestConfigWrapper): IGlobalTestDef {
-        const testConfig = this.options.globalConfigs.global_test_definitions[testConfigWrapper.test];
-        if (!testConfig)
-            throw new Error(`Unknown testId: ${JSON.stringify(testConfigWrapper.test)}`);
-        return testConfig;
+    private async getBenchmarkData(benchmarkHomeDir: string, benchmarkProps: IConfigLoaderResult['benchmarkMap'][string]): Promise<ITestData[]> {
+        const logDir = path.join(benchmarkHomeDir, "log")
+        // TODO read/save
+        const data = await buildBenchmarkData(logDir, benchmarkProps)
+        return data;
     }
 
-    private getBenchmarkTask(testConfig: IGlobalTestDef, runId: string, testDir: string, iterationDir: string): unknown {
-        if (testConfig.benchmark_type === "dataset_quiz") {
-            // return new DatasetQuizBenchmarkTask({
-            //     homeDir: testDir,
-            //     iterationDir,
-            //     runId,
-            //     params: testConfig.params
-            // })
+    private async runTests(testDataList: ITestData[], benchmarkRunner: IAbstractBenchmarkRunner<ITestData, ITestRunData, IEvaluationRunData>, llmRunner: IManageableLLMRunner) {
+
+        const testResults: Array<{ testData: ITestData, testRunResult: ITestRunData | IRunError }> = []
+
+        try {
+            await llmRunner.start();
+
+            for (const testData of testDataList) {
+                try {
+                    const testRunResult = await benchmarkRunner.runTest(llmRunner, testData)
+                    testResults.push({ testData, testRunResult })
+                } catch (err) {
+                    console.error(err);
+                    testResults.push({ testData, testRunResult: { status: "ERROR", error: (err as any)?.message ?? JSON.stringify(err) } })
+                }
+            }
+
+        } catch (err) {
+            console.error(err);
         }
-        throw new Error(`unknown benchmarkType "${testConfig.benchmark_type}"`)
-    }
-
-    private saveResults(testConfigWrapper: IInternalTestConfigWrapper, iteration: number, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined): IBeanchmarkResult {
-
-        const testMetadata: IBenchmarkResult = {
-            benchmark_lmm: testConfigWrapper.benchmark_llm,
-            evaluation_lmm: testConfigWrapper.evaluation_llm,
-            test_type: testConfigWrapper.test,
-            test_name: this.getTestName(testConfigWrapper),
-            runId,
-            iteration,
-            run_error,
+        finally {
+            await llmRunner.stop()
         }
 
-        const safeTaskResults = !taskResults || (taskResults.length == 0)
-            ? [testMetadata]
-            : taskResults.map(record => ({ ...testMetadata, ...record }));
-
-        FileUtils.saveAsCsv(iterationDir, `results.csv`, safeTaskResults);
-
-        return {
-            benchmrk_run_name: testMetadata.test_name,
-            benchmark_type: testMetadata.test_type,
-            error: run_error,
-            results: safeTaskResults
-        };
+        return testResults;
     }
+
+    private async evaluateAnswers(answersToEvaluate: ITestRunResult[], benchmarkRunner: IAbstractBenchmarkRunner<ITestData, ITestRunData, IEvaluationRunData>, llmRunner: IManageableLLMRunner): Promise<IEvaluationResult[]> {
+        const results: IEvaluationResult[] = []
+
+        try {
+            await llmRunner.start();
+
+            for (const { testData, testRunResult } of answersToEvaluate) {
+                if (testRunResult.status === "ERROR") {
+                    results.push({ testData, testRunResult, evaluationResult: [] })
+                    continue;
+                }
+                try {
+                    const evaluationResults = await benchmarkRunner.evaluateTest(llmRunner, testData, testRunResult)
+                    results.push({ testData, testRunResult, evaluationResult: evaluationResults })
+                } catch (err) {
+                    console.error(err);
+                    results.push({ testData, testRunResult, evaluationResult: [{ status: "ERROR", error: (err as any)?.message ?? JSON.stringify(err) }] })
+                }
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+        finally {
+            await llmRunner.stop()
+        }
+
+        return results;
+    }
+
+    private async buildTaskSummary(results: IEvaluationResult[], benchmarkRunner: IAbstractBenchmarkRunner<ITestData, ITestRunData, IEvaluationRunData>): Promise<object[]> {
+        return results
+            .map(({ testData, testRunResult, evaluationResult }) => benchmarkRunner.extractDataToCsv(testData, testRunResult, evaluationResult))
+    }
+
+    private async runTask(task: IBenchmarkTaskConfig): Promise<void> {
+        const { taskName } = task;
+        const { benchmarkHomeDir, benchmarkDataBuilderProps, runnerProps, taskHomeDir, benchmarkLlmRunner, evaluationLlmRunner } = this.prepareTask(task);
+
+        // get benchmark test data
+        const testDataList = await this.getBenchmarkData(benchmarkHomeDir, benchmarkDataBuilderProps);
+
+        // build benchmark runner
+        const runner = await buildBenchmarkRunner(benchmarkDataBuilderProps, runnerProps)
+
+        console.log(`[START] Running task: ${taskName}`);
+
+        // execute test
+        const testResults = await this.runTests(testDataList, runner, benchmarkLlmRunner)
+
+        // evaluate results
+        const evaluationResults = await this.evaluateAnswers(testResults, runner, evaluationLlmRunner);
+
+        // build summary
+        const summary = await this.buildTaskSummary(evaluationResults, runner);
+        FileUtils.saveAsCsv(benchmarkHomeDir, `${taskName}.csv`, summary);
+
+        console.log(`[DONE] Running task: ${taskName}`);
+    }
+
+
+
+
+
+
+
+
+    // private saveResults(testConfigWrapper: IBenchmarkTask, iteration: number, iterationDir: string, runId: string, taskResults: {}[] | undefined, run_error: unknown | undefined): IBeanchmarkResult {
+
+    //     const testMetadata: IBenchmarkResult = {
+    //         benchmark_lmm: testConfigWrapper.benchmark_llm,
+    //         evaluation_lmm: testConfigWrapper.evaluation_llm,
+    //         test_type: testConfigWrapper.benchmark,
+    //         test_name: this.getTestName(testConfigWrapper),
+    //         runId,
+    //         iteration,
+    //         run_error,
+    //     }
+
+    //     const safeTaskResults = !taskResults || (taskResults.length == 0)
+    //         ? [testMetadata]
+    //         : taskResults.map(record => ({ ...testMetadata, ...record }));
+
+    //     FileUtils.saveAsCsv(iterationDir, `results.csv`, safeTaskResults);
+
+    //     return {
+    //         benchmrk_run_name: testMetadata.test_name,
+    //         benchmark_type: testMetadata.test_type,
+    //         error: run_error,
+    //         results: safeTaskResults
+    //     };
+    // }
 }
 
 interface IBeanchmarkResult {
@@ -204,4 +229,15 @@ interface IBenchmarkResult {
     runId: string,
     iteration: number,
     run_error?: unknown,
+}
+
+interface ITestRunResult {
+    testData: ITestData,
+    testRunResult: ITestRunData | IRunError,
+}
+
+interface IEvaluationResult {
+    testData: ITestData,
+    testRunResult: ITestRunData | IRunError,
+    evaluationResult: Array<IEvaluationRunData | IRunError>
 }

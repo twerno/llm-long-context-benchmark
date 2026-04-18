@@ -1,5 +1,5 @@
 import { AbstractBenchmarkRunner, IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
-import { IDatasetQuizTaskEvaluationRunData, IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData } from "./DatasetQuizBenchmarkTypes";
+import { IDatasetQuizTaskEvaluationRunData, IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData } from "./datasetQuizBenchmarkTypes";
 
 
 const systemMessage = `### ROLE

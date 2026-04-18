@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+// ==========================
+// LLM_RUNNER
+// ==========================
+
 export const ZOpenAiCompatibleSchema = z.object({
     type: z.literal("openAICompatible"),
     url: z.url(),
@@ -20,23 +24,15 @@ export const ZLlamaRunnerSchema = z.object({
     extra_flags: z.array(z.string()).optional()
 });
 
-export const ZRunnerDefinitionSchema = z.union([
-    z.string(),              // Odwołanie do globalnej listy
-    ZOpenAiCompatibleSchema,  // Definicja inline LM Studio
-    ZLlamaRunnerSchema,       // Definicja inline Llama
-]);
+const ZLlmRunnerSpecSchema = z.union([ZOpenAiCompatibleSchema, ZLlamaRunnerSchema])
 
-export const ZTestTypeEnum = z.enum([
-    "hidden_phrase",
-    "sequence_numbers",
-    "dataset_quiz"
-]);
-
+// ==========================
+// BENCHMARK
+// ==========================
 
 export const ZQuizTestParamsSchema = z.object({
     datasetSetSize: z.number().positive(),
-    questionsSetSize: z.number().positive(),
-    evaluationStepRuns: z.number().positive()
+    questionsSetSize: z.number().positive()
 })
 
 export const ZQuizBenchmarkConfigSchema = z.object({
@@ -45,25 +41,35 @@ export const ZQuizBenchmarkConfigSchema = z.object({
     params: ZQuizTestParamsSchema
 })
 
-const ZBenchmarkConfigSchema = z.union([ZQuizBenchmarkConfigSchema])
+export const ZQuiz2BenchmarkConfigSchema = z.object({
+    benchmark_type: z.literal("dataset_quiz2"),
 
-export const IBenchmarkRunConfigSchema = z.object({
-    name: z.string().optional(),
+    params: z.string()
+})
+
+export const ZBenchmarkConfigSchema = z.union([ZQuizBenchmarkConfigSchema, ZQuiz2BenchmarkConfigSchema])
+
+// ==========================
+// TASK
+// ==========================
+
+export const ITaskConfigSchema = z.object({
+    task_name: z.string(),
     benchmark_llm: z.string(),
     evaluation_llm: z.string(),
     runs: z.number().int().positive().default(1),
-    test: z.union([z.string(), z.array(z.string())])
+    evaluation_runs: z.number().positive(),
+    benchmarks: z.union([z.string(), z.array(z.string())])
 });
 
 
-/**
- * Główny schemat konfiguracji całego benchmarku
- */
-const ZSpecSchema = z.union([ZOpenAiCompatibleSchema, ZLlamaRunnerSchema])
+// ==========================
+// CONFIG
+// ==========================
 
 export const ZConfigSchema = z.object({
-    global_llms: z.record(z.string(), ZSpecSchema),
-    global_test_definitions: z.record(z.string(), ZBenchmarkConfigSchema),
-    benchmarks: z.array(IBenchmarkRunConfigSchema),
+    llms_config: z.record(z.string(), ZLlmRunnerSpecSchema),
+    benchmarks_config: z.record(z.string(), ZBenchmarkConfigSchema),
+    tasks_config: z.array(ITaskConfigSchema),
 });
 

@@ -1,30 +1,21 @@
 import z from "zod";
-import { IBenchmarkRunConfigSchema, ZConfigSchema, ZLlamaRunnerSchema, ZRunnerDefinitionSchema } from "../app/configSchema";
+import { ITaskConfigSchema as ITasksConfigSchema, ZConfigSchema, ZLlamaRunnerSchema, ZQuizBenchmarkConfigSchema } from "../app/configSchema";
 
 export type IConfig = z.infer<typeof ZConfigSchema>;
-export type IGlobalLLMMap = IConfig['global_llms'];
-export type IGlobalTestDefMap = IConfig['global_test_definitions'];
-export type IGlobalTestDef = IConfig['global_test_definitions'][string];
+export type ILLMConfigMap = IConfig['llms_config'];
+export type IBenchmarkConfigMap = IConfig['benchmarks_config'];
+export type ITaskConfigList = IConfig['tasks_config'];
 
-export type IGlobalConfig = {
-    global_llms: IGlobalLLMMap;
-    global_test_definitions: IGlobalTestDefMap;
-};
-
-// export type IOpenAiCompatible = z.infer<typeof ZOpenAiCompatibleSchema>
-// export type ITestConfig = z.infer<typeof ZBenchmarkConfigSchema>;
-// export type ISpec = z.infer<typeof ZSpecSchema>;
 export type ILlamaRunner = z.infer<typeof ZLlamaRunnerSchema>
-export type IBenchmarkConfig = z.infer<typeof IBenchmarkRunConfigSchema>;
-export type IRunnerDefinition = z.infer<typeof ZRunnerDefinitionSchema>;
+export type IBenchmarkTasksConfig = z.infer<typeof ITasksConfigSchema>;
+// export type IRunnerDefinition = z.infer<typeof ZRunnerDefinitionSchema>;
 
-/**
- * Internal representation of a single test after expansion
- */
-export interface IInternalTestConfigWrapper {
-    name: string;
+export type IBenchmarkType = z.infer<typeof ZQuizBenchmarkConfigSchema>['benchmark_type']
+
+export interface IBenchmarkTaskConfig {
+    taskName: string;
     benchmark_llm: string;
     evaluation_llm: string;
-    runs: number;
-    test: string;
+    benchmark: string;
+    evaluationRuns: number
 }

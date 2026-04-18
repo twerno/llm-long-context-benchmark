@@ -1,47 +1,58 @@
 import fs from 'fs';
 import { ZConfigSchema } from './configSchema';
-import { IGlobalConfig, IInternalTestConfigWrapper } from './configType';
-
+import { IBenchmarkConfigMap, IBenchmarkTaskConfig, IBenchmarkTasksConfig, IConfig, ILLMConfigMap } from './configType';
 
 
 export interface IConfigLoaderResult {
-    tasks: IInternalTestConfigWrapper[];
-    globalConfigs: IGlobalConfig;
+    tasks: IBenchmarkTaskConfig[];
+    llmMap: ILLMConfigMap;
+    benchmarkMap: IBenchmarkConfigMap;
 }
 
 export class ConfigLoader {
-    public static load(configPath: string): IConfigLoaderResult {
+
+    public static readFile(configPath: string): IConfig {
         const fileContent = fs.readFileSync(configPath, 'utf-8');
-        const rawConfig = ZConfigSchema.parse(JSON.parse(fileContent));
+        return ZConfigSchema.parse(JSON.parse(fileContent));
+    }
 
-        const tasks: IInternalTestConfigWrapper[] = [];
-        const globalConfigs: IGlobalConfig = {
-            global_llms: rawConfig.global_llms,
-            global_test_definitions: rawConfig.global_test_definitions
-        };
+    public static load(rawConfig: IConfig): IConfigLoaderResult {
+        const llmMap = rawConfig.llms_config
+        const benchmarkMap = rawConfig.benchmarks_config
 
-        for (const entry of rawConfig.benchmarks) {
-            if (Array.isArray(entry.test)) {
-                for (const testId of entry.test) {
-                    tasks.push({
-                        name: entry.name ? `${entry.name} - ${testId}` : testId,
-                        benchmark_llm: entry.benchmark_llm,
-                        evaluation_llm: entry.evaluation_llm,
-                        runs: entry.runs,
-                        test: testId
-                    });
-                }
-            } else {
-                tasks.push({
-                    name: entry.name || entry.test,
-                    benchmark_llm: entry.benchmark_llm,
-                    evaluation_llm: entry.evaluation_llm,
-                    runs: entry.runs,
-                    test: entry.test
-                });
-            }
+        const tasks: IBenchmarkTaskConfig[] = [];
+        const taskNameMap: Record<string, number> = {}
+
+        for (const taskDef of rawConfig.tasks_config) {
+            ConfigLoader.buildTasks(taskDef, taskNameMap)
+                .forEach(task => tasks.push(task))
         }
 
-        return { tasks, globalConfigs };
+        return { tasks, llmMap, benchmarkMap };
+    }
+
+    private static buildTasks(benchmarkConfig: IBenchmarkTasksConfig, tasksNames: Record<string, number>): IBenchmarkTaskConfig[] {
+        const benchmarks = benchmarkConfig.benchmarks instanceof Array
+            ? benchmarkConfig.benchmarks
+            : [benchmarkConfig.benchmarks]
+
+        const result: IBenchmarkTaskConfig[] = [];
+        for (const benchmark of benchmarks) {
+            for (let i = 0; i < benchmarkConfig.runs; i++) {
+                const taskName = `${benchmark}_${benchmarkConfig.benchmark_llm}`;
+                const idx = tasksNames[taskName] ?? 0;
+
+                result.push({
+                    benchmark,
+                    benchmark_llm: benchmarkConfig.benchmark_llm,
+                    evaluation_llm: benchmarkConfig.evaluation_llm,
+                    taskName: `${taskName}_${idx}`,
+                    evaluationRuns: benchmarkConfig.evaluation_runs
+                })
+
+                tasksNames[taskName] = idx + 1;
+            }
+        }
+        return result
     }
 }
