@@ -152,6 +152,7 @@ class UniqueResourceGenerator {
     public generateUniqueProvinceName() {
 
         const generator = () => [
+            dsUtils.pickOne(datasetConsts.countryNamePrefixes),
             dsUtils.pickOne(datasetConsts.countryNames)
         ]
             .join("")
