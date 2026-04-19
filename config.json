@@ -1,90 +1,88 @@
 {
-    "global_llms": {
-        "evaluator": {
+    "llms_config": {
+        "google_gemma-4-26B-A4B-it-Q4_K_S": {
             "type": "llamacpp",
-            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "model_path": "D:\\modele AI\\LM Studio\\bartowski\\gemma-4-26b-a4b-it-gguf\\google_gemma-4-26B-A4B-it-Q4_K_S.gguf",
+            "executable_path": "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+            "model_path": "D:/modele AI/LM Studio/bartowski/gemma-4-26b-a4b-it-gguf/google_gemma-4-26B-A4B-it-Q4_K_S.gguf",
             "extra_flags": [
-                "--no-cache-prompt",
-                "--cache-ram",
-                "0",
-                "--gpu-layers",
-                "all",
-                "--no-mmap",
-                "--direct-io"
-            ],
-            "ctx_size": 4096
-        },
-        "evaluator_quick": {
-            "type": "llamacpp",
-            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "model_path": "D:\\modele AI\\LM Studio\\lmstudio-community\\Qwen3-4B-Instruct-2507-GGUF\\Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
-            "extra_flags": [
-                "--no-cache-prompt",
-                "--cache-ram",
-                "0",
-                "--gpu-layers",
-                "all",
-                "--no-mmap",
-                "--direct-io"
-            ],
-            "ctx_size": 4096
+                "--no-cache-prompt"
+            ]
         },
         "Bielik-4.5B-v3.0-Instruct.Q8_0": {
             "type": "llamacpp",
-            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "model_path": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-4.5B-v3.0-Instruct-GGUF\\Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
-            "ctx_size": 0
+            "executable_path": "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+            "model_path": "D:/modele AI/LM Studio/speakleash/Bielik-4.5B-v3.0-Instruct-GGUF/Bielik-4.5B-v3.0-Instruct.Q8_0.gguf",
+            "ctx_size": 8192
         },
-        "Bielik-11B-v3.0-Instruct.Q4_K_M": {
+        "gemma-4-E4B-it-Q4_K_M": {
             "type": "llamacpp",
-            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "model_path": "D:\\modele AI\\LM Studio\\speakleash\\Bielik-11B-v3.0-Instruct-GGUF\\Bielik-11B-v3.0-Instruct.Q4_K_M.gguf",
-            "ctx_size": 0
+            "executable_path": "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+            "model_path": "D:/modele AI/LM Studio/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf",
+            "ctx_size": 8192
         },
-        "Ministral-3-3B-Instruct-2512-Q4_K_M": {
+        "evaluator": {
             "type": "llamacpp",
-            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "model_path": "D:\\modele AI\\LM Studio\\lmstudio-community\\Ministral-3-3B-Instruct-2512-GGUF\\Ministral-3-3B-Instruct-2512-Q4_K_M.gguf",
-            "ctx_size": 12288
+            "executable_path": "D:/Programy/llama-b8708-bin-win-vulkan-x64/llama-server.exe",
+            "model_path": "D:/modele AI/LM Studio/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf",
+            "ctx_size": 8192,
+            "extra_flags": [
+                "--no-cache-prompt",
+                "--cache-ram",
+                "0",
+                "--gpu-layers",
+                "all",
+                "--no-mmap",
+                "--direct-io"
+            ]
         },
-        "Qwen3-4B-Instruct-2507-Q4_K_M": {
-            "type": "llamacpp",
-            "executable_path": "D:\\Programy\\llama-b8763-bin-win-vulkan-x64\\llama-server.exe",
-            "model_path": "D:\\modele AI\\LM Studio\\lmstudio-community\\Qwen3-4B-Instruct-2507-GGUF\\Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
-            "ctx_size": 12288
+        "offline": {
+            "type": "offline"
         }
     },
-    "global_test_definitions": {
+    "benchmarks_config": {
         "quiz_size_2_2": {
             "benchmark_type": "dataset_quiz",
             "params": {
-                "datasetSetSize": 2,
-                "evaluationStepRuns": 2,
-                "questionsSetSize": 2
+                "dataset_set_size": 2,
+                "questions_set_size": 2
             }
         },
         "quiz_size_1_1": {
             "benchmark_type": "dataset_quiz",
             "params": {
-                "datasetSetSize": 1,
-                "evaluationStepRuns": 1,
-                "questionsSetSize": 1
+                "dataset_set_size": 1,
+                "questions_set_size": 1
+            }
+        },
+        "secrets_1_1": {
+            "benchmark_type": "hidden_phrase",
+            "params": {
+                "text_length": 1000,
+                "no_of_hidden_phrases": 100
             }
         }
     },
-    "tests": [
+    "tasks_config": [
         {
-            "benchmark_llm": "Qwen3-4B-Instruct-2507-Q4_K_M",
-            "evaluation_llm": "evaluator_quick",
-            "runs": 1,
-            "test": "quiz_size_1_1"
+            "benchmark_llm": [
+                "gemma-4-E4B-it-Q4_K_M",
+                "Bielik-4.5B-v3.0-Instruct.Q8_0"
+            ],
+            "evaluation_llm": "evaluator",
+            "benchmarks": [
+                "quiz_size_1_1"
+            ],
+            "evaluation_runs": 1,
+            "runs": 1
         },
         {
-            "benchmark_llm": "Bielik-4.5B-v3.0-Instruct.Q8_0",
-            "evaluation_llm": "evaluator_quick",
-            "runs": 2,
-            "test": "quiz_size_1_1"
+            "benchmark_llm": "gemma-4-E4B-it-Q4_K_M",
+            "evaluation_llm": "offline",
+            "benchmarks": [
+                "secrets_1_1"
+            ],
+            "evaluation_runs": 1,
+            "runs": 1
         }
     ]
 }

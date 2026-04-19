@@ -65,7 +65,7 @@ export const example: IConfig = {
     },
     tasks_config: [
         {
-            benchmark_llm: "gemma-4-E4B-it-Q4_K_M",
+            benchmark_llm: ["gemma-4-E4B-it-Q4_K_M", "Bielik-4.5B-v3.0-Instruct.Q8_0"],
             evaluation_llm: "evaluator",
             benchmarks: ["quiz_size_1_1"],
             evaluation_runs: 1,
