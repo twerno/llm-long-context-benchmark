@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { ZConfigSchema } from './configSchema';
 import { IBenchmarkConfigMap, IBenchmarkTaskConfig, IBenchmarkTasksConfig, IConfig, ILLMConfigMap } from './configType';
+import FileUtils from '../utils/FileUtils';
 
 
 export interface IConfigLoaderResult {
@@ -36,22 +37,35 @@ export class ConfigLoader {
             ? benchmarkConfig.benchmarks
             : [benchmarkConfig.benchmarks]
 
+        const benchmarkLlms = benchmarkConfig.benchmark_llm instanceof Array
+            ? benchmarkConfig.benchmark_llm
+            : [benchmarkConfig.benchmark_llm]
+
+        const evaluationLlms = benchmarkConfig.evaluation_llm instanceof Array
+            ? benchmarkConfig.evaluation_llm
+            : [benchmarkConfig.evaluation_llm]
+
         const result: IBenchmarkTaskConfig[] = [];
         for (const benchmark of benchmarks) {
-            for (let i = 0; i < benchmarkConfig.runs; i++) {
-                const taskName = `${benchmark}_${benchmarkConfig.benchmark_llm}`;
-                const idx = tasksNames[taskName] ?? 1;
+            for (const benchmark_llm of benchmarkLlms) {
+                for (const evaluation_llm of evaluationLlms) {
 
-                result.push({
-                    benchmark,
-                    runIdx: i,
-                    benchmark_llm: benchmarkConfig.benchmark_llm,
-                    evaluation_llm: benchmarkConfig.evaluation_llm,
-                    taskName: `${taskName}_${idx}`,
-                    evaluationRuns: benchmarkConfig.evaluation_runs
-                })
+                    for (let i = 0; i < benchmarkConfig.runs; i++) {
+                        const taskName = FileUtils.toSafeFilename(`${benchmark}_${benchmark_llm}_${evaluation_llm}`);
+                        const idx = tasksNames[taskName] ?? 1;
 
-                tasksNames[taskName] = idx + 1;
+                        result.push({
+                            benchmark,
+                            runIdx: i,
+                            benchmark_llm,
+                            evaluation_llm,
+                            taskName: `${taskName}_${idx}`,
+                            evaluationRuns: benchmarkConfig.evaluation_runs
+                        })
+
+                        tasksNames[taskName] = idx + 1;
+                    }
+                }
             }
         }
         return result
