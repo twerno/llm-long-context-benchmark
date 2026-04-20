@@ -1,9 +1,9 @@
 import { IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
-import { AbstractBenchmarkRunnerAndEvaluator } from "../../benchmark_orchestrator/AbstractBenchmarkRunnerAndEvaluator";
+import { AbstractBenchmarkRunnerAndEvaluator, IPrompt } from "../../benchmark_orchestrator/AbstractBenchmarkRunnerAndEvaluator";
 import { IDatasetQuizTaskEvaluationRunData, IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData } from "./datasetQuizBenchmarkTypes";
 
 
-const systemMessage = `### ROLE
+const systemPrompt = `### ROLE
 You are a strict grading assistant. Your task is to evaluate if the User's Answer is correct based on the provided Reference Information in response to the Question.
 
 ### EVALUATION RULES
@@ -34,16 +34,16 @@ export class DatasetQuizBenchmarkRunner extends AbstractBenchmarkRunnerAndEvalua
     }
 
 
-    protected async buildEvaluationPrompt(data: IDatasetQuizTaskTestData, testRunData: IDatasetQuizTaskTestRunData): Promise<string[]> {
+    protected async buildEvaluationPrompt(data: IDatasetQuizTaskTestData, testRunData: IDatasetQuizTaskTestRunData): Promise<IPrompt> {
         const userPrompt = userMessageTemplate
             .replace("<QUESTION>", data.quizTest.question)
             .replace("<HINT>", data.quizTest.hint)
             .replace("<ANSWER>", testRunData.llmAnswer);
 
-        return [
-            systemMessage,
-            userPrompt
-        ]
+        return {
+            systemPrompt,
+            userPrompt: [userPrompt]
+        }
     }
 
 

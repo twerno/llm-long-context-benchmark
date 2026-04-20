@@ -2,10 +2,15 @@ import { ILLMRunner, ILLMRunnerProps } from "../llmRunner/ILLMRunner";
 import FileUtils from "../utils/FileUtils";
 import { ITestData, ITestRunData, IEvaluationRunData, AbstractBenchmarkRunner, IRunError } from "./AbstractBenchmarkRunner";
 
+export interface IPrompt {
+    systemPrompt?: string,
+    userPrompt: string[]
+}
+
 export abstract class AbstractBenchmarkRunnerAndEvaluator<T_DATA extends ITestData, T_RUN_DATA extends ITestRunData, EV_DATA_RUN extends IEvaluationRunData = IEvaluationRunData> extends AbstractBenchmarkRunner<T_DATA, T_RUN_DATA, EV_DATA_RUN> {
 
     protected abstract mapTestSuccessResponse(data: T_DATA, runData: ITestRunData): T_RUN_DATA;
-    protected abstract buildEvaluationPrompt(data: T_DATA, testRunData: T_RUN_DATA): Promise<string[]>
+    protected abstract buildEvaluationPrompt(data: T_DATA, testRunData: T_RUN_DATA): Promise<IPrompt>
     protected abstract internalEvaluateLlmAnswer(data: T_DATA, testRunData: T_RUN_DATA, lllAnswer: string): Promise<boolean>
     protected abstract mapEvaluationSuccessResponse(data: T_DATA, runData: ITestRunData, evaluationRunData: IEvaluationRunData): EV_DATA_RUN;
 
@@ -14,7 +19,8 @@ export abstract class AbstractBenchmarkRunnerAndEvaluator<T_DATA extends ITestDa
         const result: Array<EV_DATA_RUN | IRunError> = [];
         const requestBody: ILLMRunnerProps = { messages: [] }
         const prompts = await this.buildEvaluationPrompt(data, testRunData);
-        prompts.forEach(content => requestBody.messages.push({ role: "user", content }));
+        prompts.systemPrompt && requestBody.messages.push({ role: "system", content: prompts.systemPrompt })
+        prompts.userPrompt.forEach(content => requestBody.messages.push({ role: "user", content }));
 
         for (let i = 0; i < this.props.evaluationRuns; i++) {
             const tmp = await this.internalEvaluateTest(llmRunner, data, testRunData, requestBody, i)
