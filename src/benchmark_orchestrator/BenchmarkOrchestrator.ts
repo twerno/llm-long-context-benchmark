@@ -46,11 +46,13 @@ export class BenchmarkOrchestrator {
     }
 
     private async runTask(task: IBenchmarkTaskConfig): Promise<ITaskSummary | null> {
-        const { taskName } = task;
-        const { benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner, benchmarkRunHomeDir } = this.prepareTask(task);
+        const { benchmarkRunId: taskName, taskId } = task;
+        const { benchmarkRunHomeDir, benchmarkHomeDir, benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner } = this.prepareTask(task);
 
-        if (FileUtils.fileExist(benchmarkRunHomeDir, `${FileUtils.toSafeFilename(taskName)}.csv`)) {
-            console.log(`[SKIPPING] Test already done: ${taskName}`);
+        const resultFilename = `${taskId}.csv`
+
+        if (FileUtils.fileExist(benchmarkHomeDir, resultFilename)) {
+            console.log(`[SKIPPING] Test already done: "${taskName}" iteration: ${task.runIdx + 1}/${task.runTotal}`);
             return null;
         }
 
@@ -60,7 +62,7 @@ export class BenchmarkOrchestrator {
         // build benchmark runner
         const runner = await buildBenchmarkRunner(benchmarkDataBuilderProps, runnerProps)
 
-        console.log(`[START] Running task: ${taskName}`);
+        console.log(`[START] Running task: "${taskName}" iteration: ${task.runIdx + 1}/${task.runTotal}`);
 
         // execute test
         const testResults = await this.runTests(testDataList, runner, benchmarkLlmRunner)
@@ -70,9 +72,9 @@ export class BenchmarkOrchestrator {
 
         // build summary
         const summary = await this.buildTaskSummary(task, benchmarkDataBuilderProps, evaluationResults, runner);
-        FileUtils.saveAsCsv(benchmarkRunHomeDir, `${FileUtils.toSafeFilename(taskName)}.csv`, summary);
+        FileUtils.saveAsCsv(benchmarkHomeDir, resultFilename, summary);
 
-        console.log(`[DONE] Running task: ${taskName}`);
+        console.log(`[DONE] Running task: "${taskName}" iteration: ${task.runIdx + 1}/${task.runTotal}`);
 
         return { task, summary };
     }
@@ -95,8 +97,8 @@ export class BenchmarkOrchestrator {
 
         // task directory
         const benchmarkHomeDir = path.join(this.rootDir, FileUtils.toSafeFilename(task.benchmark));
-        const benchmarkRunHomeDir = path.join(benchmarkHomeDir, `${task.runIdx + 1}`);
-        const taskLogDir = path.join(benchmarkRunHomeDir, "logs", FileUtils.toSafeFilename(task.benchmark_llm));
+        const benchmarkRunHomeDir = path.join(benchmarkHomeDir, task.benchmarkRunId);
+        const taskLogDir = path.join(benchmarkRunHomeDir, "logs", task.taskId);
 
         // benchmark test builder properties
         const benchmarkDataBuilderProps = this.options.config.benchmarkMap[task.benchmark]
@@ -112,7 +114,7 @@ export class BenchmarkOrchestrator {
             logDir: taskLogDir
         }
 
-        return { benchmarkRunHomeDir, benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner }
+        return { benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner, benchmarkHomeDir, benchmarkRunHomeDir }
     }
 
     private async getBenchmarkData(benchmarkHomeDir: string, benchmarkProps: IConfigLoaderResult['benchmarkMap'][string], task: IBenchmarkTaskConfig): Promise<ITestData[]> {

@@ -64,8 +64,8 @@ export const ZBenchmarkConfigSchema = z.union([ZQuizBenchmarkConfigSchema, ZHidd
 
 export const ITaskConfigSchema = z.object({
     benchmark_llm: z.union([z.string(), z.array(z.string())]),
-    evaluation_llm: z.union([z.string(), z.array(z.string())]),
-    runs: z.number().int().positive().default(1),
+    evaluation_llm: z.string(),
+    runs: z.number().int().nonnegative().default(1),
     evaluation_runs: z.number().positive(),
     benchmarks: z.union([z.string(), z.array(z.string())])
 });

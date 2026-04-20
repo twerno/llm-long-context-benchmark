@@ -8,13 +8,14 @@ export type ITaskConfigList = IConfig['tasks_config'];
 
 export type ILlamaRunner = z.infer<typeof ZLlamaRunnerSchema>
 export type IBenchmarkTasksConfig = z.infer<typeof ITasksConfigSchema>;
-// export type IRunnerDefinition = z.infer<typeof ZRunnerDefinitionSchema>;
 
 export type IBenchmarkType = z.infer<typeof ZQuizBenchmarkConfigSchema>['benchmark_type']
 
 export interface IBenchmarkTaskConfig {
-    taskName: string;
+    benchmarkRunId: string;
     runIdx: number,
+    runTotal: number,
+    taskId: string,
     benchmark_llm: string;
     evaluation_llm: string;
     benchmark: string;

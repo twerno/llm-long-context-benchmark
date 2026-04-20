@@ -22,17 +22,17 @@ export class ConfigLoader {
         const benchmarkMap = rawConfig.benchmarks_config
 
         const tasks: IBenchmarkTaskConfig[] = [];
-        const taskNameMap: Record<string, number> = {}
+        const benchmarkRunIds: Record<string, number> = {}
 
         for (const taskDef of rawConfig.tasks_config) {
-            ConfigLoader.buildTasks(taskDef, taskNameMap)
+            ConfigLoader.buildTasks(taskDef, benchmarkRunIds)
                 .forEach(task => tasks.push(task))
         }
 
         return { tasks, llmMap, benchmarkMap };
     }
 
-    private static buildTasks(benchmarkConfig: IBenchmarkTasksConfig, tasksNames: Record<string, number>): IBenchmarkTaskConfig[] {
+    private static buildTasks(benchmarkConfig: IBenchmarkTasksConfig, benchmarkRunIds: Record<string, number>): IBenchmarkTaskConfig[] {
         const benchmarks = benchmarkConfig.benchmarks instanceof Array
             ? benchmarkConfig.benchmarks
             : [benchmarkConfig.benchmarks]
@@ -41,33 +41,36 @@ export class ConfigLoader {
             ? benchmarkConfig.benchmark_llm
             : [benchmarkConfig.benchmark_llm]
 
-        const evaluationLlms = benchmarkConfig.evaluation_llm instanceof Array
-            ? benchmarkConfig.evaluation_llm
-            : [benchmarkConfig.evaluation_llm]
-
         const result: IBenchmarkTaskConfig[] = [];
         for (const benchmark of benchmarks) {
             for (const benchmark_llm of benchmarkLlms) {
-                for (const evaluation_llm of evaluationLlms) {
 
-                    for (let i = 0; i < benchmarkConfig.runs; i++) {
-                        const taskName = FileUtils.toSafeFilename(`${benchmark}_${benchmark_llm}_${evaluation_llm}`);
-                        const idx = tasksNames[taskName] ?? 1;
+                const benchmarkRunId = this.buildBenchmarkRunId(benchmark, benchmark_llm, benchmarkRunIds);
+                for (let i = 0; i < benchmarkConfig.runs; i++) {
 
-                        result.push({
-                            benchmark,
-                            runIdx: i,
-                            benchmark_llm,
-                            evaluation_llm,
-                            taskName: `${taskName}_${idx}`,
-                            evaluationRuns: benchmarkConfig.evaluation_runs
-                        })
+                    result.push({
+                        benchmark,
+                        benchmarkRunId: FileUtils.toSafeFilename(benchmarkRunId),
+                        runIdx: i,
+                        runTotal: benchmarkConfig.runs,
+                        benchmark_llm,
+                        evaluation_llm: benchmarkConfig.evaluation_llm,
+                        taskId: FileUtils.toSafeFilename(`${benchmarkRunId}__${i}`),
+                        evaluationRuns: benchmarkConfig.evaluation_runs
+                    })
 
-                        tasksNames[taskName] = idx + 1;
-                    }
                 }
             }
+
         }
         return result
+    }
+
+    private static buildBenchmarkRunId(benchmark: string, benchmark_llm: string, benchmarkRunIds: Record<string, number>) {
+        const baseName = FileUtils.toSafeFilename(`${benchmark}__${benchmark_llm}`);
+        const idx = benchmarkRunIds[baseName] ?? 1;
+        benchmarkRunIds[baseName] = idx + 1;
+
+        return `${baseName}__${idx}`
     }
 }
