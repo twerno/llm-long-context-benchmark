@@ -26,6 +26,8 @@ export abstract class AbstractBenchmarkRunnerAndEvaluator<T_DATA extends ITestDa
 
 
     private async internalEvaluateTest(llmRunner: ILLMRunner, data: T_DATA, testRunData: T_RUN_DATA, requestBody: ILLMRunnerProps, iterationIdx: number): Promise<EV_DATA_RUN | IRunError> {
+        const start = performance.now();
+        const filename = `evaluation_${data.testIdx + 1}_${iterationIdx + 1}.json`
         try {
             const resp = await this.sendRequest2Llm(llmRunner, requestBody);
             const { completionTokens, llmAnswer, promptTokens, totalTime } = resp;
@@ -33,8 +35,20 @@ export abstract class AbstractBenchmarkRunnerAndEvaluator<T_DATA extends ITestDa
             const evaluationResult = await this.internalEvaluateLlmAnswer(data, testRunData, llmAnswer);
 
             if (this.props.logDir) {
-                const body = JSON.stringify({ data, testRun: testRunData, llmAnswer, evaluationResult, promptTokens, completionTokens, totalTime }, null, 2);
-                FileUtils.writeFile(this.props.logDir, `evaluation_${data.testIdx + 1}_${iterationIdx + 1}.json`, body);
+                const body = {
+                    data,
+                    testRunData,
+                    evaluationRun: {
+                        status: "OK",
+                        prompt: requestBody.messages,
+                        llmAnswer,
+                        evaluationResult,
+                        promptTokens,
+                        completionTokens,
+                        totalTime
+                    }
+                };
+                FileUtils.writeFile(this.props.logDir, filename, JSON.stringify(body, null, 2));
             }
 
             return this.mapEvaluationSuccessResponse(data, testRunData, {
@@ -47,7 +61,12 @@ export abstract class AbstractBenchmarkRunnerAndEvaluator<T_DATA extends ITestDa
             })
         } catch (err) {
             console.error(err)
-            return this.mapEvaluationError(data, testRunData, JSON.stringify((err as any)?.message ?? err));
+            const errorMsg = (err as any)?.message ?? err
+            if (this.props.logDir) {
+                const body = { data, testRunData, evaluationRun: { status: "ERROR", errorMsg, totalTime: Math.round(performance.now() - start) } }
+                FileUtils.writeFile(this.props.logDir, filename, JSON.stringify(body, null, 2));
+            }
+            return this.mapEvaluationError(data, testRunData, JSON.stringify(errorMsg));
         }
     }
 

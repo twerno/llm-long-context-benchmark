@@ -60,7 +60,8 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
     protected abstract mapTestSuccessResponse(data: T_DATA, runData: ITestRunData): T_RUN_DATA;
 
     public async runTest(llmRunner: ILLMRunner, data: T_DATA): Promise<T_RUN_DATA | IRunError> {
-
+        const start = performance.now();
+        const filename = `test_${data.testIdx + 1}.json`
         try {
             const requestBody: ILLMRunnerProps = { messages: [] }
             if (data.systemPrompt) {
@@ -72,8 +73,8 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
             const { completionTokens, llmAnswer, promptTokens, totalTime } = resp;
 
             if (this.props.logDir) {
-                const body = JSON.stringify({ data, llmAnswer, promptTokens, completionTokens, totalTime }, null, 2);
-                FileUtils.writeFile(this.props.logDir, `test_${data.testIdx + 1}.json`, body);
+                const body = JSON.stringify({ data, testRunData: { status: "OK", llmAnswer, promptTokens, completionTokens, totalTime } }, null, 2);
+                FileUtils.writeFile(this.props.logDir, filename, body);
             }
 
             return this.mapTestSuccessResponse(data, {
@@ -85,7 +86,12 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
             })
         } catch (err) {
             console.error(err)
-            return this.mapTestError(data, JSON.stringify((err as any)?.message ?? err));
+            const errorMsg = (err as any)?.message ?? err
+            if (this.props.logDir) {
+                const body = { data, testRunData: { status: "ERROR", errorMsg, totalTime: Math.round(performance.now() - start) } }
+                FileUtils.writeFile(this.props.logDir, filename, JSON.stringify(body, null, 2));
+            }
+            return this.mapTestError(data, JSON.stringify(errorMsg));
         }
     }
 
