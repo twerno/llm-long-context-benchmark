@@ -1,4 +1,5 @@
-import { AbstractBenchmarkRunner, AbstractBenchmarkRunnerAndEvaluator, IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
+import { IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
+import { AbstractBenchmarkRunnerAndEvaluator } from "../../benchmark_orchestrator/AbstractBenchmarkRunnerAndEvaluator";
 import { IDatasetQuizTaskEvaluationRunData, IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData } from "./datasetQuizBenchmarkTypes";
 
 
