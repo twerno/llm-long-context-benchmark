@@ -16,7 +16,7 @@ export const buildDatasetBenchmarkData: IBuildBenchmarkTestsDataFn<IDatasetQuizB
 
     const dataset = await buildDataset(params);
 
-    const systemPrompt = dataset.map(convertDataset2Prompt);
+    const knowledgePrompt = dataset.map(convertDataset2Prompt);
 
     const quizEntries = Array.from({ length: params.questionsSetSize })
         .map((_, idx) => buildFantasyCountryQuiz(dataset, idx))
@@ -25,9 +25,9 @@ export const buildDatasetBenchmarkData: IBuildBenchmarkTestsDataFn<IDatasetQuizB
     return quizEntries
         .map((quizTest, idx) => ({
             testIdx: idx,
-            systemPrompt,
+            systemPrompt: undefined,
             quizTest,
-            userPrompt: [quizTest.question]
+            userPrompt: [...knowledgePrompt, quizTest.question]
         }))
 
 }

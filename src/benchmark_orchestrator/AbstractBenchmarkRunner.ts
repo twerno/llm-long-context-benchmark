@@ -9,7 +9,7 @@ export interface IBenchmarkRunnerConfig {
 
 export interface ITestData {
     testIdx: number,
-    systemPrompt: string[],
+    systemPrompt?: string,
     userPrompt: string[]
 }
 
@@ -63,7 +63,9 @@ export abstract class AbstractBenchmarkRunner<T_DATA extends ITestData, T_RUN_DA
 
         try {
             const requestBody: ILLMRunnerProps = { messages: [] }
-            data.systemPrompt.forEach(content => requestBody.messages.push({ role: "system", content }));
+            if (data.systemPrompt) {
+                requestBody.messages.push({ role: "system", content: data.systemPrompt });
+            }
             data.userPrompt.forEach(content => requestBody.messages.push({ role: "user", content }));
 
             const resp = await this.sendRequest2Llm(llmRunner, requestBody);

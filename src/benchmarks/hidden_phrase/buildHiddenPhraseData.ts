@@ -41,7 +41,7 @@ export const buildHiddenPhraseData: IBuildBenchmarkTestsDataFn<IHiddenPhraseBenc
     return [
         {
             testIdx: 0,
-            systemPrompt: [fillerTextSB.join(" ")],
+            systemPrompt: fillerTextSB.join(" "),
             userPrompt: [promptTemplte],
             hiddenPhrases
         }
