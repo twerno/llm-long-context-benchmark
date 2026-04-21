@@ -26,6 +26,24 @@ export default {
     },
 
     /**
+     * Picks a single random element from an array diffrent from given element.
+     * 
+     * @param arr - The array to pick from.
+     * @param notThat - Element we don't want to get.
+     * @returns A randomly selected element from the array.
+     */
+    pickOneBut<T>(arr: T[], notThat: T) {
+        const result = this
+            .pickSome<T>({ min: 1, max: 2 })
+            .from(arr)
+            .filter(v => v != notThat)[0];
+        if (result === null) {
+            throw new Error(`there is not enough elements in array ${JSON.stringify(arr)} diffrent than ${JSON.stringify(notThat)}`)
+        }
+        return result;
+    },
+
+    /**
      * Picks a single random element from an array.
      * 
      * @param arr - The array to pick from.
