@@ -12,7 +12,32 @@ export default {
     randomInt(min: number, max: number) {
         const _max = Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, max))
         const _min = Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, min), max);
-        return Math.floor(Math.random() * (_max - _min)) + _min
+        return Math.round(Math.random() * (_max - _min)) + _min
+    },
+
+
+    /**
+     * Generates array of unique random integers between min and max (inclusive).
+     * 
+     * @param min - The minimum value.
+     * @param max - The maximum value.
+     * @param size - size of result array
+     * @returns An array of random integers.
+     */
+    uniqueRandomInts(min: number, max: number, size: number) {
+        if (max - min + 1 < size) {
+            throw new Error(`Set size ${max - min + 1} is too small to generate unique ${size} nmbers.`)
+        }
+        const possibleNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+
+        const results: number[] = []
+        for (let i = 0; i < size; i++) {
+            const randomIdx = Math.floor(Math.random() * possibleNumbers.length)
+            const nextUniqueInteger = possibleNumbers.splice(randomIdx, 1)[0]
+            results.push(nextUniqueInteger);
+        }
+
+        return results
     },
 
     /**
@@ -37,7 +62,7 @@ export default {
             .pickSome<T>({ min: 1, max: 2 })
             .from(arr)
             .filter(v => v != notThat)[0];
-        if (result === null) {
+        if (result == null) {
             throw new Error(`there is not enough elements in array ${JSON.stringify(arr)} diffrent than ${JSON.stringify(notThat)}`)
         }
         return result;
@@ -68,7 +93,7 @@ export default {
             const length = this.randomInt(min, _max);
             const result = Array
                 .from({ length })
-                .map((_) => this.randomInt(0, arr.length))
+                .map((_) => this.randomInt(0, arr.length - 1))
                 .map(idx => arr[idx])
 
             return [...new Set(result)];

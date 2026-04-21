@@ -53,8 +53,13 @@ function buildNewQuestions(dataset: ICountrySchema[], questionIdxGenerator: () =
 
     // 4. czy władcą countryname jest ruler
     country = dsUtils.pickOne(dataset);
-    const country2 = dsUtils.pickOneBut(dataset, country)
-    let someRuler = dsUtils.pickOne([country.ruler, country2.ruler]);
+    let someRuler: string = "";
+    if (dataset.length === 1) {
+        someRuler = dsUtils.pickOne([country.ruler, "Dlonra Reggenewzrahcs The Great"]);
+    } else {
+        const country2 = dsUtils.pickOneBut(dataset, country)
+        someRuler = dsUtils.pickOne([country.ruler, country2.ruler]);
+    }
     quizEntries.push({
         questionInSetIdx: questionIdxGenerator(),
         questionSetIdx: setIdx,
@@ -206,7 +211,7 @@ function buildNewQuestions(dataset: ICountrySchema[], questionIdxGenerator: () =
         type: ["RELATIONAL_MAPPING", "SCALAR_OUTPUT"]
     });
 
-    // 16. 3 najczesciej wystepujace przestepstwa w prowincji
+    // 16. 3 najczesciej wystepujace przestepstwa w prowincji; wartosci crimeRates sa unikatowe w prowincji 
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
     let top3Crimes = province.crimeRates.sort((a, b) => b.rate - a.rate).slice(0, 3);
@@ -220,7 +225,7 @@ function buildNewQuestions(dataset: ICountrySchema[], questionIdxGenerator: () =
         type: ["COMPARISON", "SORTED_LIST", "LIST_OUTPUT"]
     });
 
-    // 17. 3 najrzadsze przestepstwa w prowincji
+    // 17. 3 najrzadsze przestepstwa w prowincji; wartosci crimeRates sa unikatowe w prowincji 
     country = dsUtils.pickOne(dataset);
     province = dsUtils.pickOne(country.province);
     let bottom3Crimes = province.crimeRates.sort((a, b) => a.rate - b.rate).slice(0, 3);

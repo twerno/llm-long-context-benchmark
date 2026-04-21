@@ -104,10 +104,12 @@ function generateResourceProduction() {
 }
 
 function generateCrimeRates() {
+    const rates = dsUtils.uniqueRandomInts(0, 90, datasetConsts.crimeTypes.length)
+
     return datasetConsts.crimeTypes
-        .map<ICrimeRate>(type => ({
+        .map<ICrimeRate>((type, idx) => ({
             type,
-            rate: dsUtils.randomInt(0, 90)
+            rate: rates[idx]
         }))
 }
 
