@@ -56,7 +56,7 @@ export class LlamaServerRunner implements IManageableLLMRunner {
         await this.waitForServer();
     }
 
-    private async waitForServer(timeoutMs: number = 60000): Promise<void> {
+    private async waitForServer(timeoutMs: number = 300000): Promise<void> {
         const start = Date.now();
         while (Date.now() - start < timeoutMs) {
             try {
