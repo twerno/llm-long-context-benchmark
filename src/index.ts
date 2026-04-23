@@ -7,7 +7,7 @@ async function run() {
     console.log(`Starting with params: ${JSON.stringify(parsedArgv, null, 2)}`)
     const configJson = ConfigLoader.readFile(parsedArgv.configFilePath ?? `./config.json`)
     const config = ConfigLoader.load(configJson)
-    const orchestrator = new BenchmarkOrchestrator({ config, rootDir: parsedArgv.rootDir, testId: parsedArgv.testId })
+    const orchestrator = new BenchmarkOrchestrator({ config, rootDir: parsedArgv.rootDir, testId: parsedArgv.testId, resumeUnfinishedRun: parsedArgv.resumeUnfinishedRun })
     await orchestrator.run()
 }
 
@@ -20,6 +20,7 @@ function parseArgv() {
         configFilePath: extract(/--configFilePath=([^\s]+)/),
         rootDir: extract(/--rootDir=([^\s]+)/),
         testId: extract(/--testId=([^\s]+)/),
+        resumeUnfinishedRun: !!extract(/(--resumeUnfinishedRun)/)
     };
 
     return ZArgvSchema.parse(config);

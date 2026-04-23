@@ -12,6 +12,7 @@ export interface OrchestratorOptions {
     config: IConfigLoaderResult
     rootDir?: string,
     testId?: string; // Katalog główny wyników
+    resumeUnfinishedRun?: boolean
 }
 
 export class BenchmarkOrchestrator {
@@ -47,7 +48,7 @@ export class BenchmarkOrchestrator {
 
     private async runTask(task: IBenchmarkTaskConfig): Promise<ITaskSummary | null> {
         const { benchmarkRunId: taskName, taskId } = task;
-        const { benchmarkRunHomeDir, benchmarkHomeDir, benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner } = this.prepareTask(task);
+        const { benchmarkHomeDir, benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner } = this.prepareTask(task);
 
         const resultFilename = `${taskId}.csv`
 
@@ -57,7 +58,7 @@ export class BenchmarkOrchestrator {
         }
 
         // get benchmark test data
-        const testDataList = await this.getBenchmarkData(benchmarkRunHomeDir, benchmarkDataBuilderProps, task);
+        const testDataList = await this.getBenchmarkData(benchmarkHomeDir, benchmarkDataBuilderProps, task);
 
         // build benchmark runner
         const runner = await buildBenchmarkRunner(benchmarkDataBuilderProps, runnerProps)
@@ -98,7 +99,7 @@ export class BenchmarkOrchestrator {
         // task directory
         const benchmarkHomeDir = path.join(this.rootDir, FileUtils.toSafeFilename(task.benchmark));
         const benchmarkRunHomeDir = path.join(benchmarkHomeDir, task.benchmarkRunId);
-        const taskLogDir = path.join(benchmarkRunHomeDir, "logs", task.taskId);
+        const taskLogDir = path.join(benchmarkHomeDir, "logs", task.taskId);
 
         // benchmark test builder properties
         const benchmarkDataBuilderProps = this.options.config.benchmarkMap[task.benchmark]
@@ -111,7 +112,8 @@ export class BenchmarkOrchestrator {
         const runnerProps: IBenchmarkRunnerConfig = {
             benchmarkType: benchmarkDataBuilderProps.benchmark_type,
             evaluationRuns: task.evaluationRuns,
-            logDir: taskLogDir
+            logDir: taskLogDir,
+            resumeUnfinishedRun: this.options.resumeUnfinishedRun
         }
 
         return { benchmarkDataBuilderProps, runnerProps, benchmarkLlmRunner, evaluationLlmRunner, benchmarkHomeDir, benchmarkRunHomeDir }
@@ -137,13 +139,14 @@ export class BenchmarkOrchestrator {
             await llmRunner.start();
 
             for (const testData of testDataList) {
+                const start = performance.now();
                 try {
                     console.log(`--- testing ${testData.testIdx}`)
                     const testRunResult = await benchmarkRunner.runTest(llmRunner, testData)
                     testResults.push({ testData, testRunResult })
                 } catch (err) {
                     console.error(err);
-                    testResults.push({ testData, testRunResult: { status: "ERROR", error: (err as any)?.message ?? JSON.stringify(err) } })
+                    testResults.push({ testData, testRunResult: { status: "ERROR", errorMsg: (err as any)?.message ?? JSON.stringify(err), totalTime: Math.round(performance.now() - start) } })
                 }
             }
 
@@ -159,6 +162,7 @@ export class BenchmarkOrchestrator {
 
     private async evaluateAnswers(answersToEvaluate: ITestRunResult[], benchmarkRunner: IAbstractBenchmarkRunner<ITestData, ITestRunData, IEvaluationRunData>, llmRunner: IManageableLLMRunner): Promise<IEvaluationResult[]> {
         const results: IEvaluationResult[] = []
+        const start = performance.now();
 
         try {
             await llmRunner.start();
@@ -174,7 +178,7 @@ export class BenchmarkOrchestrator {
                     results.push({ testData, testRunResult, evaluationResult: evaluationResults })
                 } catch (err) {
                     console.error(err);
-                    results.push({ testData, testRunResult, evaluationResult: [{ status: "ERROR", error: (err as any)?.message ?? JSON.stringify(err) }] })
+                    results.push({ testData, testRunResult, evaluationResult: [{ status: "ERROR", errorMsg: (err as any)?.message ?? JSON.stringify(err), totalTime: Math.round(performance.now() - start) }] })
                 }
             }
 

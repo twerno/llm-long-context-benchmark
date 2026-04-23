@@ -1,4 +1,5 @@
-import { IEvaluationRunData, IRunError, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
+import z from "zod";
+import { IEvaluationRunData, IRunError, ITestRunData, ZEvaluationRunDataSchema, ZRunErrorSchema, ZTestRunDataSchema } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
 import { AbstractBenchmarkRunnerAndEvaluator, IPrompt } from "../../benchmark_orchestrator/AbstractBenchmarkRunnerAndEvaluator";
 import { IDatasetQuizTaskEvaluationRunData, IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData } from "./datasetQuizBenchmarkTypes";
 
@@ -28,6 +29,13 @@ const userMessageTemplate = `### DATA
 
 export class DatasetQuizBenchmarkRunner extends AbstractBenchmarkRunnerAndEvaluator<IDatasetQuizTaskTestData, IDatasetQuizTaskTestRunData, IDatasetQuizTaskEvaluationRunData> {
 
+    protected validateRunData(x: any): x is IDatasetQuizTaskTestRunData | IRunError {
+        return !!z.union([ZTestRunDataSchema, ZRunErrorSchema]).parse(x)
+    }
+
+    protected validateEvalRunData(x: any): x is IEvaluationRunData | IRunError {
+        throw !!z.union([ZEvaluationRunDataSchema, ZRunErrorSchema]).parse(x);
+    }
 
     protected mapTestSuccessResponse(data: IDatasetQuizTaskTestData, runData: ITestRunData): IDatasetQuizTaskTestRunData {
         return runData;
@@ -69,7 +77,7 @@ export class DatasetQuizBenchmarkRunner extends AbstractBenchmarkRunnerAndEvalua
             }
             : {
                 testStatus: 0,
-                testError: testRun.error,
+                testError: testRun.errorMsg,
                 testPromptTokens: 0,
                 testCompletionTokens: 0,
                 testTotalTime: 0

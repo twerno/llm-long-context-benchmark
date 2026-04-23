@@ -1,4 +1,5 @@
-import { AbstractBenchmarkRunner, IEvaluationRunData, IRunError, ITestData, ITestRunData } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
+import z from "zod";
+import { AbstractBenchmarkRunner, IEvaluationRunData, IRunError, ITestData, ITestRunData, ZEvaluationRunDataSchema, ZRunErrorSchema, ZTestRunDataSchema } from "../../benchmark_orchestrator/AbstractBenchmarkRunner";
 import { ILLMRunner } from "../../llmRunner/ILLMRunner";
 import { IHiddenPhraseTestData } from "./buildHiddenPhraseData";
 
@@ -11,6 +12,14 @@ export interface IHiddenPhraseEvaluationRunData extends IEvaluationRunData {
 
 
 export class HiddenPhraseBenchmarkRunner extends AbstractBenchmarkRunner<IHiddenPhraseTestData, ITestRunData, IEvaluationRunData> {
+
+    protected validateRunData(x: any): x is IEvaluationRunData | IRunError {
+        throw !!z.union([ZEvaluationRunDataSchema, ZRunErrorSchema]).parse(x);
+    }
+
+    protected validateEvalRunData(x: any): x is ITestRunData | IRunError {
+        return !!z.union([ZTestRunDataSchema, ZRunErrorSchema]).parse(x)
+    }
 
 
     protected mapTestSuccessResponse(data: ITestData, runData: ITestRunData): ITestRunData {
@@ -56,7 +65,7 @@ export class HiddenPhraseBenchmarkRunner extends AbstractBenchmarkRunner<IHidden
             }
             : {
                 testStatus: 0,
-                testError: testRun.error,
+                testError: testRun.errorMsg,
             }
 
 
