@@ -7,7 +7,9 @@ export const ZTestRunDataSchema = z.object({
     promptTokens: z.number(),
     completionTokens: z.number(),
     totalTime: z.number(),
-    llmAnswer: z.string()
+    llmAnswer: z.string(),
+    llmReasoning: z.string().optional()
+
 })
 
 export const ZRunErrorSchema = z.object({
@@ -22,7 +24,8 @@ export const ZEvaluationRunDataSchema = z.object({
     promptTokens: z.number(),
     completionTokens: z.number(),
     totalTime: z.number(),
-    llmAnswer: z.string()
+    llmAnswer: z.string(),
+    llmReasoning: z.string().optional()
 })
 
 
@@ -92,10 +95,11 @@ export abstract class AbstractBenchmarkRunner<
             data.userPrompt.forEach(content => requestBody.messages.push({ role: "user", content }));
 
             const resp = await this.sendRequest2Llm(llmRunner, requestBody);
-            const { completionTokens, llmAnswer, promptTokens, totalTime } = resp;
+            const { completionTokens, llmAnswer, promptTokens, totalTime, llmReasoning } = resp;
             const testRunData = this.mapTestSuccessResponse(data, {
                 status: "OK",
                 llmAnswer,
+                llmReasoning,
                 totalTime,
                 promptTokens,
                 completionTokens,
@@ -122,13 +126,14 @@ export abstract class AbstractBenchmarkRunner<
 
     protected async sendRequest2Llm(runner: ILLMRunner, requestBody: ILLMRunnerProps) {
         const resp = await runner.run(requestBody)
-        const llmAnswer = resp.output[0] ?? ""
-        const { promptTokens, completionTokens, totalTime } = resp;
+        const { promptTokens, completionTokens, totalTime, } = resp;
+        const { llmAnswer, llmReasoning } = resp.output
         return {
             promptTokens,
             completionTokens,
             totalTime,
-            llmAnswer
+            llmAnswer,
+            llmReasoning
         }
     }
 

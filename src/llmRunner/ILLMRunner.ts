@@ -6,7 +6,10 @@ export interface ILLMRunnerProps {
 }
 
 export interface ILLMRunnerOutput {
-    output: string[];
+    output: {
+        llmReasoning?: string,
+        llmAnswer: string
+    };
     promptTokens: number;
     completionTokens: number;
     totalTokens: number;

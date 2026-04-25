@@ -92,9 +92,11 @@ export class OpenAICompatibleApiLlmRunner implements ILLMRunner {
             if (!response.body || !response.headers.get('content-type')?.includes('text/event-stream')) {
                 // Fallback if not streaming (though we requested it)
                 const data = ZChatCompletionResponseSchema.parse(await response.json());
-                const output = data.choices.map((choice) => choice.message.content);
+                const answer = data.choices.map((choice) => choice.message.content).join("");
                 return {
-                    output,
+                    output: {
+                        llmAnswer: answer
+                    },
                     completionTokens: data.usage?.completion_tokens ?? 0,
                     promptTokens: data.usage?.prompt_tokens ?? 0,
                     totalTokens: data.usage?.total_tokens ?? 0,
@@ -124,21 +126,31 @@ export class OpenAICompatibleApiLlmRunner implements ILLMRunner {
                 .map(l => JSON.parse(l))
                 .map(v => ZChatCompletionStreamResponseSchema.parse(v))[0]?.timings
 
-            const chunks = lines
+            const thinking = lines
                 .slice(0, -1)
                 .map(l => l.substring(6).trim())
                 .map(l => JSON.parse(l))
                 .map(v => ZChatCompletionStreamResponseSchema.parse(v))
-                .map(v => v.choices[0].delta.reasoning_content ?? v.choices[0].delta.content ?? "")
+                .map(v => v.choices[0].delta.reasoning_content ?? "")
+                .join("")
 
-            const fullContent = chunks.reduce((prev, curr) => prev + curr, "")
+            const answer = lines
+                .slice(0, -1)
+                .map(l => l.substring(6).trim())
+                .map(l => JSON.parse(l))
+                .map(v => ZChatCompletionStreamResponseSchema.parse(v))
+                .map(v => v.choices[0].delta.content ?? "")
+                .join("")
 
             const completionTokens = timings?.predicted_n ?? 0
             const promptTokens = (timings?.cache_n ?? 0) + (timings?.prompt_n ?? 0)
             const totalTokens = completionTokens + promptTokens
 
             return {
-                output: [fullContent],
+                output: {
+                    llmReasoning: thinking,
+                    llmAnswer: answer
+                },
                 completionTokens,
                 promptTokens,
                 totalTokens,

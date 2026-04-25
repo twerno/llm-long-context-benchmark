@@ -49,7 +49,7 @@ export abstract class AbstractBenchmarkRunnerAndEvaluator<
 
         try {
             const resp = await this.sendRequest2Llm(llmRunner, requestBody);
-            const { completionTokens, llmAnswer, promptTokens, totalTime } = resp;
+            const { completionTokens, llmAnswer, promptTokens, totalTime, llmReasoning } = resp;
 
             const evaluationResult = await this.internalEvaluateLlmAnswer(data, testRunData, llmAnswer);
             const evaluationRun = this.mapEvaluationSuccessResponse(data, testRunData, {
@@ -58,7 +58,8 @@ export abstract class AbstractBenchmarkRunnerAndEvaluator<
                 totalTime,
                 promptTokens,
                 completionTokens,
-                llmAnswer
+                llmAnswer,
+                llmReasoning
             })
 
             if (this.props.logDir) {

@@ -111,5 +111,5 @@ export class ManageableLLMRunnerWrapper implements IManageableLLMRunner {
 export class DummyLLMRunner implements IManageableLLMRunner {
     public start() { return Promise.resolve() }
     public stop() { return Promise.resolve() }
-    public run(props: ILLMRunnerProps) { return Promise.resolve<ILLMRunnerOutput>({ output: [], completionTokens: 0, promptTokens: 0, totalTime: 0, totalTokens: 0 }) }
+    public run(props: ILLMRunnerProps) { return Promise.resolve<ILLMRunnerOutput>({ output: { llmAnswer: "" }, completionTokens: 0, promptTokens: 0, totalTime: 0, totalTokens: 0 }) }
 }
